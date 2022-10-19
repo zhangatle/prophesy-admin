@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.0.2",
+        "alphasnow/aliyun-oss-laravel": "^4.6",
         "dcat/laravel-admin": "2.*",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.19",

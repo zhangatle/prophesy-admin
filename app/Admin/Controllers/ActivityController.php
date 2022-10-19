@@ -28,10 +28,12 @@ class ActivityController extends AdminController
             $grid->column('status');
             $grid->column('kt_status');
             $grid->column('sort');
-        
+
             $grid->filter(function (Grid\Filter $filter) {
-                $filter->equal('id');
-        
+                $filter->panel();
+                $filter->like("name")->width(2);
+                $filter->between("start_time")->datetime()->width(3);
+                $filter->equal('status')->select(['1' => '开启', '0' => '关闭'])->width(2);
             });
         });
     }
