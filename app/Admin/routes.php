@@ -13,5 +13,10 @@ Route::group([
 ], function (Router $router) {
 
     $router->get('/', 'HomeController@index');
-
+    $router->resource('order', 'OrderController');
+    $router->resource('transition', 'TransitionController');
+    $router->resource('member', 'MemberController');
+    $router->resource('activity', 'ActivityController');
+    $router->resource('synthetic', 'SyntheticController');
+    $router->resource('withdrawal', 'WithdrawalController');
 });

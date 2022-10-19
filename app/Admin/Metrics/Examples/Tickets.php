@@ -16,7 +16,7 @@ class Tickets extends RadialBar
 
         $this->title('Tickets');
         $this->height(400);
-        $this->chartHeight(300);
+        $this->chartHeight(500);
         $this->chartLabels('Completed Tickets');
         $this->dropdown([
             '7' => 'Last 7 Days',

@@ -1,5 +1,7 @@
 <?php
 
+use App\Admin\RowActions\TextAction;
+
 return [
 
     /*
@@ -11,7 +13,7 @@ return [
     | login page.
     |
     */
-    'name' => 'Dcat Admin',
+    'name' => '预言',
 
     /*
     |--------------------------------------------------------------------------
@@ -169,7 +171,7 @@ return [
     'grid' => [
 
         // The global Grid action display class.
-        'grid_action_class' => Dcat\Admin\Grid\Displayers\DropdownActions::class,
+        'grid_action_class' => TextAction::class,
 
         // The global Grid batch action display class.
         'batch_action_class' => Dcat\Admin\Grid\Tools\BatchActions::class,
@@ -262,7 +264,7 @@ return [
     'upload' => [
 
         // Disk in `config/filesystem.php`.
-        'disk' => 'public',
+        'disk' => 'admin',
 
         // Image and file upload path under the disk above.
         'directory' => [
