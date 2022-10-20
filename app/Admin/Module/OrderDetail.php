@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 class OrderDetail extends Card
 {
     protected $data;
-    protected $ordr;
+    protected $order;
     protected $activity;
     protected $sku;
     protected $order_no;
@@ -30,7 +30,7 @@ class OrderDetail extends Card
     {
         parent::init();
         // 设置标题
-        $this->title('行为数据');
+        $this->title('订单状态') . $this->order_no;
     }
 
     // 传递自定义参数到 handle 方法
