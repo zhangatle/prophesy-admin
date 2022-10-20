@@ -5,6 +5,7 @@ namespace App\Admin\Module;
 use App\Admin\Repositories\Order;
 use App\Admin\Repositories\Transition;
 use App\Admin\Repositories\Withdrawal;
+use App\Models\OrdersChild;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Widgets\Metrics\Card;
 use Dcat\Admin\Widgets\Tab;
@@ -16,6 +17,7 @@ class OrderDetail extends Card
     protected $ordr;
     protected $activity;
     protected $sku;
+    protected $order_no;
 
     // 构造方法参数必须设置默认值
     public function __construct(array $data = [])
@@ -48,6 +50,7 @@ class OrderDetail extends Card
     {
         // 获取外部传递的自定义参数
         $id = $request->get("id");
+        $order_no = \App\Models\Order::query()->where("id", $id)->first()->pluck("order_no");
         $build = Order::with(["activity", "member", "child"]);
         $this->activity = Grid::make($build, function (Grid $grid) use ($id) {
             // 第一列显示id字段，并将这一列设置为可排序列
@@ -79,6 +82,8 @@ class OrderDetail extends Card
             $grid->column('create_time');
             $grid->column('delete_time');
 
+            $this->order_no = $grid->column("order_no");
+
             $grid->withBorder();
 
             $grid->disableActions();
@@ -88,7 +93,27 @@ class OrderDetail extends Card
             $grid->disableCreateButton();
         });
 
-        $this->sku = \App\Models\Order::with(["child"])->where("id", $id)->get()->toArray();
+        $sku_build = OrdersChild::with(["activity"]);
+        $this->sku = Grid::make($sku_build, function (Grid $grid) use ($order_no) {
+            // 第一列显示id字段，并将这一列设置为可排序列
+            $grid->model()->where("order_no", $order_no);
+            $grid->column("id");
+            $grid->column("order_no");
+            $grid->column("activity.name");
+            $grid->column("type");
+            $grid->column("keywork");
+            $grid->column("number");
+            $grid->column("chip_num");
+            $grid->column("status");
+            $grid->column("price");
+            $grid->withBorder();
+
+            $grid->disableActions();
+            $grid->disablePagination();
+            $grid->disableRowSelector();
+            $grid->disableRefreshButton();
+            $grid->disableCreateButton();
+        });
     }
 
     public function renderContent()
