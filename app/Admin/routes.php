@@ -21,6 +21,7 @@ Route::group([
     $router->resource('withdrawal', 'WithdrawalController');
     $router->get('/report/summary', 'ReportController@index');
     $router->get('/report/daily', 'ReportController@daily');
+    $router->resource('promo', 'PromoController');
 
 //    $router->get('activity/{id}/edit', 'ActivityController@edit');
 //    $router->put('activity/{id}', 'ActivityController@update');

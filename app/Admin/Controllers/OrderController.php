@@ -2,9 +2,14 @@
 
 namespace App\Admin\Controllers;
 
+use App\Admin\Module\MemberData;
+use App\Admin\Module\MemberDetail;
+use App\Admin\Module\OrderDetail;
 use App\Admin\Repositories\Order;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
+use Dcat\Admin\Layout\Content;
+use Dcat\Admin\Layout\Row;
 use Dcat\Admin\Show;
 use Dcat\Admin\Http\Controllers\AdminController;
 
@@ -17,78 +22,34 @@ class OrderController extends AdminController
      */
     protected function grid()
     {
-        return Grid::make(new Order(), function (Grid $grid) {
+        $build = Order::with(['activity', 'member']);
+        return Grid::make($build, function (Grid $grid) {
             $grid->column('id')->sortable();
-            $grid->column('member_id');
+            $grid->column('member.username', '用户昵称');
             $grid->column('order_no');
-            $grid->column('activity_id');
-            $grid->column('activity_name');
-            $grid->column('username');
-            $grid->column('mobile');
+            $grid->column('activity.name');
+            $grid->column('member.mobile', '手机号');
             $grid->column('actual_price');
             $grid->column('channel');
             $grid->column('payment_time');
-            $grid->column('status');
+            $grid->column('status')->using([1=>'已完成', 0 =>'未完成']);
             $grid->column('chip_num');
             $grid->column('create_time');
             $grid->column('delete_time');
-        
+
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->equal('id');
-        
+
             });
         });
     }
 
-    /**
-     * Make a show builder.
-     *
-     * @param mixed $id
-     *
-     * @return Show
-     */
-    protected function detail($id)
+    public function show($id, Content $content)
     {
-        return Show::make($id, new Order(), function (Show $show) {
-            $show->field('id');
-            $show->field('member_id');
-            $show->field('order_no');
-            $show->field('activity_id');
-            $show->field('activity_name');
-            $show->field('username');
-            $show->field('mobile');
-            $show->field('actual_price');
-            $show->field('channel');
-            $show->field('payment_time');
-            $show->field('status');
-            $show->field('chip_num');
-            $show->field('create_time');
-            $show->field('delete_time');
-        });
-    }
-
-    /**
-     * Make a form builder.
-     *
-     * @return Form
-     */
-    protected function form()
-    {
-        return Form::make(new Order(), function (Form $form) {
-            $form->display('id');
-            $form->text('member_id');
-            $form->text('order_no');
-            $form->text('activity_id');
-            $form->text('activity_name');
-            $form->text('username');
-            $form->text('mobile');
-            $form->text('actual_price');
-            $form->text('channel');
-            $form->text('payment_time');
-            $form->text('status');
-            $form->text('chip_num');
-            $form->text('create_time');
-            $form->text('delete_time');
-        });
+        return $content->header('订单详情')
+            ->description('详情')
+            ->body(function (Row $row) use ($id) {
+                $row->column(12, new OrderDetail(['id'=>$id]));
+            });
     }
 }

@@ -6,22 +6,14 @@ use Dcat\Admin\Traits\HasDateTimeFormatter;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Order extends Model
+class OrdersChild extends Model
 {
 	use HasDateTimeFormatter;
-    protected $table = 'fun_orders';
+    protected $table = 'fun_orders_child';
     public $timestamps = false;
 
     public function activity() {
         return $this->belongsTo(Activity::class);
-    }
-
-    public function member() {
-        return $this->belongsTo(Member::class);
-    }
-
-    public function child() {
-        return $this->hasMany(OrdersChild::class, "order_no", "order_no");
     }
 
 }
