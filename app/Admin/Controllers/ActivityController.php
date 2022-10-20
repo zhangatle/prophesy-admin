@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Admin\Repositories\Activity;
+use Carbon\Carbon;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Show;
@@ -20,14 +21,25 @@ class ActivityController extends AdminController
         return Grid::make(new Activity(), function (Grid $grid) {
             $grid->column('id')->sortable();
             $grid->column('name');
-            $grid->column('img_url');
-            $grid->column('detail');
+            $grid->column('img_url')->image("", "50", "50");
+            $grid->column('detail')->display(function ($pictures) {
+                return json_decode($pictures, true);
+            })->image("", 50, 50);
             $grid->column('price');
             $grid->column('start_time');
             $grid->column('end_time');
-            $grid->column('status');
-            $grid->column('kt_status');
-            $grid->column('sort');
+            $grid->column('status')->using([0 => '禁用', 1 => '启用']);;
+            $grid->column('kt_status')->using([0 => '未空投', 1 => '已空投']);
+            $grid->column('create_time');
+            $grid->column('activity_status')->display(function () {
+                if ($this->start_time > Carbon::now()) {
+                    return "未开始";
+                } elseif ($this->end < Carbon::now()) {
+                    return "已结束";
+                } else {
+                    return "进行中";
+                }
+            });
 
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->panel();
@@ -35,6 +47,8 @@ class ActivityController extends AdminController
                 $filter->between("start_time")->datetime()->width(3);
                 $filter->equal('status')->select(['1' => '开启', '0' => '关闭'])->width(2);
             });
+            $grid->disableDeleteButton();
+            $grid->disableRowSelector();
         });
     }
 
@@ -68,17 +82,44 @@ class ActivityController extends AdminController
      */
     protected function form()
     {
-        return Form::make(new Activity(), function (Form $form) {
-            $form->display('id');
-            $form->text('name');
-            $form->text('img_url');
-            $form->text('detail');
-            $form->text('price');
-            $form->text('start_time');
-            $form->text('end_time');
-            $form->text('status');
-            $form->text('kt_status');
-            $form->text('sort');
+        $builder = Activity::with('details');
+
+        return Form::make($builder, function (Form $form) {
+            $form->tab("活动信息", function (Form $form) {
+                $form->display('id');
+                $form->text('name');
+                $form->image('img_url')->autoUpload();
+                $form->multipleImage("detail", '活动详情')->saving(function ($paths) {
+                    return json_encode($paths);
+                })->autoUpload()->uniqueName();
+                $form->datetimeRange('start_time', 'end_time', '时间范围');
+                $form->text('price');
+                $form->text('status');
+                $form->text('kt_status');
+                $form->text('sort');
+
+            })->tab("活动详情", function (Form $form) {
+                $form->hasMany('details', '玩法', function (Form\NestedForm $form) {
+                    $form->radio('type', '玩法')
+                        ->when(1, function (Form\NestedForm $form) {
+                            $form->nestedEmbeds('values', '配置', function ($form) {
+                                $form->text('zs', '主胜')->required();
+                                $form->text('p', '平')->required();
+                                $form->text('zf', '主负')->required();
+                            })->saving(function ($v) {
+                                return json_encode($v);
+                            });
+                        })
+                        ->options([
+                            1 => '猜谁会赢',
+                            2 => '加大难度猜',
+                            3 => '总数',
+                            4 => '比分',
+                        ])
+                        ->default(1);
+
+                });
+            });
         });
     }
 }

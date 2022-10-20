@@ -12,4 +12,7 @@ class Activity extends Model
     protected $table = 'fun_activity';
     public $timestamps = false;
 
+    public function details() {
+        return $this->hasMany(ActivityDetail::class);
+    }
 }
