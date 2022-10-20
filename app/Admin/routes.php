@@ -21,4 +21,7 @@ Route::group([
     $router->resource('withdrawal', 'WithdrawalController');
     $router->get('/report/summary', 'ReportController@index');
     $router->get('/report/daily', 'ReportController@daily');
+
+//    $router->get('activity/{id}/edit', 'ActivityController@edit');
+//    $router->put('activity/{id}', 'ActivityController@update');
 });

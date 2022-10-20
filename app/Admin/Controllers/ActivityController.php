@@ -6,6 +6,7 @@ use App\Admin\Repositories\Activity;
 use Carbon\Carbon;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
+use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Show;
 use Dcat\Admin\Http\Controllers\AdminController;
 
@@ -49,6 +50,7 @@ class ActivityController extends AdminController
             });
             $grid->disableDeleteButton();
             $grid->disableRowSelector();
+            $grid->disableViewButton();
         });
     }
 
@@ -82,44 +84,30 @@ class ActivityController extends AdminController
      */
     protected function form()
     {
-        $builder = Activity::with('details');
-
-        return Form::make($builder, function (Form $form) {
-            $form->tab("活动信息", function (Form $form) {
-                $form->display('id');
-                $form->text('name');
-                $form->image('img_url')->autoUpload();
-                $form->multipleImage("detail", '活动详情')->saving(function ($paths) {
-                    return json_encode($paths);
-                })->autoUpload()->uniqueName();
-                $form->datetimeRange('start_time', 'end_time', '时间范围');
-                $form->text('price');
-                $form->text('status');
-                $form->text('kt_status');
-                $form->text('sort');
-
-            })->tab("活动详情", function (Form $form) {
-                $form->hasMany('details', '玩法', function (Form\NestedForm $form) {
-                    $form->radio('type', '玩法')
-                        ->when(1, function (Form\NestedForm $form) {
-                            $form->nestedEmbeds('values', '配置', function ($form) {
-                                $form->text('zs', '主胜')->required();
-                                $form->text('p', '平')->required();
-                                $form->text('zf', '主负')->required();
-                            })->saving(function ($v) {
-                                return json_encode($v);
-                            });
-                        })
-                        ->options([
-                            1 => '猜谁会赢',
-                            2 => '加大难度猜',
-                            3 => '总数',
-                            4 => '比分',
-                        ])
-                        ->default(1);
-
-                });
-            });
+        return Form::make(new Activity(), function (Form $form) {
+            $form->display('id');
+            $form->text('name');
+            $form->image('img_url')->autoUpload();
+            $form->multipleImage("detail", '活动详情')->saving(function ($paths) {
+                return json_encode($paths);
+            })->autoUpload()->uniqueName();
+            $form->datetimeRange('start_time', 'end_time', '时间范围');
+            $form->text('price');
+            $form->text('status');
+            $form->text('kt_status');
+            $form->text('sort');
         });
     }
+
+//    public function edit($id, Content $content) {
+//        return $content
+//            ->translation($this->translation())
+//            ->title($this->title())
+//            ->description($this->description()['edit'] ?? trans('admin.edit'))
+//            ->body($this->form()->edit($id));
+//    }
+//
+//    public function update($id) {
+//        return $this->form()->update($id);
+//    }
 }
