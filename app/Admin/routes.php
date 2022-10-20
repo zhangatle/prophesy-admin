@@ -19,4 +19,6 @@ Route::group([
     $router->resource('activity', 'ActivityController');
     $router->resource('synthetic', 'SyntheticController');
     $router->resource('withdrawal', 'WithdrawalController');
+    $router->get('/report/summary', 'ReportController@index');
+    $router->get('/report/daily', 'ReportController@daily');
 });

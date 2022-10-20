@@ -58,7 +58,7 @@ class MemberDetail extends Card
         $this->chip_total = $member_detail->chip_total;
         $this->rate = $member_detail->rate;
         $this->first_consume = $member_detail->first_consume;
-        $this->avatar = env('APP_URL') . "/uploads/". $member_detail->avatar;
+        $this->avatar = "https://nft-markets.oss-cn-chengdu.aliyuncs.com/". $member_detail->avatar;
     }
 
     // 传递自定义参数到 handle 方法

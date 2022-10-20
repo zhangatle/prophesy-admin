@@ -102,8 +102,8 @@ class MemberController extends AdminController
             $form->text('level_id');
             $form->text('rate');
             $form->image('avatar')->uniqueName()->autoUpload()->compress([
-                'width' => 100,
-                'height' => 100,
+                'width' => 300,
+                'height' => 300,
                 // 图片质量，只有type为`image/jpeg`的时候才有效。
                 'quality' => 90,
                 // 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false.
