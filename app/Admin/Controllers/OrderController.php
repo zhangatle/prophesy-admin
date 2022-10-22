@@ -33,6 +33,7 @@ class OrderController extends AdminController
             $grid->column('create_time');
 
             $grid->disableDeleteButton();
+            $grid->disableCreateButton();
 
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->equal('id');
