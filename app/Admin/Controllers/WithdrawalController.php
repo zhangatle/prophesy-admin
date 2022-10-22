@@ -17,39 +17,29 @@ class WithdrawalController extends AdminController
      */
     protected function grid()
     {
-        return Grid::make(new Withdrawal(), function (Grid $grid) {
-            $grid->column('id')->sortable();
+        $build = Withdrawal::with(["wallet"]);
+        return Grid::make($build, function (Grid $grid) {
             $grid->column('member_id');
             $grid->column('apply_name');
             $grid->column('apply_mobile');
             $grid->column('apply_price');
             $grid->column('account');
-            $grid->column('status');
-        
-            $grid->filter(function (Grid\Filter $filter) {
-                $filter->equal('id');
-        
-            });
-        });
-    }
+            $grid->column('wallet.total', '余额');
+            $grid->column('status')->using([1=>'申请中', 2=>'已驳回', 3=>'已打款']);
 
-    /**
-     * Make a show builder.
-     *
-     * @param mixed $id
-     *
-     * @return Show
-     */
-    protected function detail($id)
-    {
-        return Show::make($id, new Withdrawal(), function (Show $show) {
-            $show->field('id');
-            $show->field('member_id');
-            $show->field('apply_name');
-            $show->field('apply_mobile');
-            $show->field('apply_price');
-            $show->field('account');
-            $show->field('status');
+            $grid->disableDeleteButton();
+            $grid->disableViewButton();
+            $grid->actions(function (Grid\Displayers\Actions $actions) {
+               $actions->append("<a class='feather icon-eye text-success' href='/admin/promo/$this->member_id'><span class='text-success'>查看分润</span></a>");
+            });
+
+            $grid->filter(function (Grid\Filter $filter) {
+                $filter->panel();
+                $filter->equal("apply_mobile")->width(2);
+                $filter->equal("member_id")->width(2);
+                $filter->between("create_time")->datetime()->width(3);
+                $filter->equal('status')->select(['1' => '申请中', '2' => '已驳回', '3'=>'已打款'])->width(2);
+            });
         });
     }
 
@@ -63,10 +53,6 @@ class WithdrawalController extends AdminController
         return Form::make(new Withdrawal(), function (Form $form) {
             $form->display('id');
             $form->text('member_id');
-            $form->text('apply_name');
-            $form->text('apply_mobile');
-            $form->text('apply_price');
-            $form->text('account');
             $form->text('status');
         });
     }

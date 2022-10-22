@@ -12,4 +12,8 @@ class Withdrawal extends Model
     protected $table = 'fun_withdrawal';
     public $timestamps = false;
 
+
+    public function wallet() {
+        return $this->belongsTo(Wallet::class, "member_id", "member_id");
+    }
 }

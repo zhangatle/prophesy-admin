@@ -1,8 +1,8 @@
-<?php 
+<?php
 return [
     'labels' => [
-        'Withdrawal' => 'Withdrawal',
-        'withdrawal' => 'Withdrawal',
+        'Withdrawal' => '提现',
+        'withdrawal' => '提现',
     ],
     'fields' => [
         'member_id' => '用户id',
@@ -11,6 +11,7 @@ return [
         'apply_price' => '提现价格',
         'account' => '提现量',
         'status' => '状态',
+        'create_time' => '创建时间',
     ],
     'options' => [
     ],
