@@ -15,7 +15,8 @@ class MemberData extends Card
     protected $data;
     protected $buy;
     protected $withdrawal;
-    protected $transition;
+    protected $transition_in;
+    protected $transition_out;
 
     // 构造方法参数必须设置默认值
     public function __construct(array $data = [])
@@ -48,56 +49,43 @@ class MemberData extends Card
     {
         // 获取外部传递的自定义参数
         $id = $request->get("id");
-        $this->buy = Grid::make(new Order(), function (Grid $grid) use ($id) {
+        $buy_build = Order::with(["activity"]);
+        $this->buy = Grid::make($buy_build, function (Grid $grid) use ($id) {
             // 第一列显示id字段，并将这一列设置为可排序列
             $grid->model()->where("member_id", $id);
-
-            $grid->column('id', 'ID')->sortable();
-            $grid->column('create_time', '下单时间')->sortable();
+            $grid->column('id', 'ID');
+            $grid->column('create_time', '下单时间');
             $grid->column('order_no', '订单号');
-            $grid->column('activity_name', '活动名称');
+            $grid->column('activity.name', '活动名称');
             $grid->column('actual_price', '实付');
             $grid->column('channel', '付款方式');
-            $grid->column('status', '订单状态');
-            $grid->column('chip_num', '碎片数')->sortable();
+            $grid->column('status', '订单状态')->using([0=>'待支付', 1=>'已支付', 2=>'已过期']);
+            $grid->column('chip_num_all', '碎片数');
             $grid->model()->orderBy("create_time", "desc");
 
+            $grid->disableActions();
             $grid->disableRefreshButton();
             $grid->disableCreateButton();
             $grid->disableRowSelector();
-            $grid->actions(function (Grid\Displayers\Actions $actions) {
-                $actions->disableDelete();
-                $actions->disableEdit();
-                $actions->disableQuickEdit();
-                $actions->disableView();
-            });
         });
         $this->withdrawal = Grid::make(new Withdrawal(), function (Grid $grid) use ($id) {
             // 第一列显示id字段，并将这一列设置为可排序列
             $grid->model()->where("member_id", $id);
-            $grid->column('id', 'ID')->sortable();
-            $grid->column('create_time', '下单时间')->sortable();
+            $grid->column('id', 'ID');
+            $grid->column('create_time', '发起时间');
             $grid->column('apply_price', '提现金额');
-            $grid->column('status', '状态');
+            $grid->column('status', '状态')->using([1=>'申请中', 2=>'已驳回', 3=>'已打款']);
             $grid->column('pay_time', '转款时间');
             $grid->model()->orderBy("create_time", "desc");
             $grid->disableRefreshButton();
             $grid->disableCreateButton();
             $grid->disableRowSelector();
-
-            $grid->actions(function (Grid\Displayers\Actions $actions) {
-                $actions->disableDelete();
-                $actions->disableEdit();
-                $actions->disableQuickEdit();
-                $actions->disableView();
-            });
+            $grid->disableActions();
         });
-        $this->transition = Grid::make(new Transition(), function (Grid $grid) use ($id) {
+        $this->transition_in = Grid::make(new Transition(), function (Grid $grid) use ($id) {
             // 第一列显示id字段，并将这一列设置为可排序列
-            $grid->model()->where("in_member_id", $id)->orWhere("out_member_id", $id);
-
-            $grid->column('id', 'ID')->sortable();
-            $grid->column('create_time', '发起时间')->sortable();
+            $grid->model()->where("in_member_id", $id);
+            $grid->column('create_time', '创建时间');
             $grid->column('in_name', '转入人昵称');
             $grid->column('in_mobile', '转入人手机号');
             $grid->column('out_name', '转出人昵称');
@@ -109,12 +97,24 @@ class MemberData extends Card
             $grid->disableRefreshButton();
             $grid->disableCreateButton();
             $grid->disableRowSelector();
-            $grid->actions(function (Grid\Displayers\Actions $actions) {
-                $actions->disableDelete();
-                $actions->disableEdit();
-                $actions->disableQuickEdit();
-                $actions->disableView();
-            });
+            $grid->disableActions();
+        });
+        $this->transition_out = Grid::make(new Transition(), function (Grid $grid) use ($id) {
+            // 第一列显示id字段，并将这一列设置为可排序列
+            $grid->model()->where("out_member_id", $id);
+            $grid->column('create_time', '创建时间');
+            $grid->column('in_name', '转入人昵称');
+            $grid->column('in_mobile', '转入人手机号');
+            $grid->column('out_name', '转出人昵称');
+            $grid->column('out_mobile', '转出人手机号');
+            $grid->column('product_name', '商品名称');
+            $grid->column('product_no', '商品编号');
+            $grid->model()->orderBy("create_time", "desc");
+
+            $grid->disableRefreshButton();
+            $grid->disableCreateButton();
+            $grid->disableRowSelector();
+            $grid->disableActions();
         });
     }
 
@@ -124,7 +124,8 @@ class MemberData extends Card
         //添加两个选项卡
         $tab->add('购买记录', $this->buy, true);
         $tab->add('提现记录', $this->withdrawal);
-        $tab->add('流转记录', $this->transition);
+        $tab->add('转入记录', $this->transition_in);
+        $tab->add('转出记录', $this->transition_out);
         return $tab->withCard() . "";
     }
 }

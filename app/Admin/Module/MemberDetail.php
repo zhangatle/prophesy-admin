@@ -21,6 +21,7 @@ class MemberDetail extends Card
     protected $first_consume;
     protected $rate;
     protected $avatar;
+    protected $member_id;
 
     // 构造方法参数必须设置默认值
     public function __construct(array $data = [])
@@ -49,7 +50,7 @@ class MemberDetail extends Card
         $this->id = $member_detail->id;
         $this->mobile = $member_detail->mobile;
         $this->username = $member_detail->username;
-        $this->realname = $member_detail->realname;
+        $this->realname = $member_detail->realname ? $member_detail->realname : "未实名";
         $this->create_time = Carbon::parse($member_detail->create_time);
         $this->status = $member_detail->status == 1 ? '正常' : '禁用';
         $this->chip_num = $member_detail->chip_num;
@@ -78,13 +79,11 @@ class MemberDetail extends Card
     <img style="width: 100%" src="{$this->avatar}" alt="">
 </div>
 <table class="table default-table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>{$this->id}</th>
-        </tr>
-    </thead>
     <tbody>
+        <tr>
+            <td>ID</td>
+            <td>{$this->id}</td>
+        </tr>
         <tr>
             <td>昵称</td>
             <td>{$this->username}</td>

@@ -64,7 +64,6 @@ class MemberController extends AdminController
             $form->display('id');
             $form->display('mobile');
             $form->text('username');
-            $form->text('level_id');
             $form->text('rate');
             $form->image('avatar')->uniqueName()->autoUpload()->compress([
                 'width' => 300,
