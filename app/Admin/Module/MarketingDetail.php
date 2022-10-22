@@ -26,8 +26,6 @@ class MarketingDetail extends Card
     protected function init()
     {
         parent::init();
-        // 设置标题
-        $this->title('行为数据');
     }
 
     // 传递自定义参数到 handle 方法
@@ -68,9 +66,7 @@ class MarketingDetail extends Card
 
     public function renderContent()
     {
-        $tab = Tab::make();
-        //添加两个选项卡
-        $tab->add('分润明细', $this->marketing, true);
-        return $tab->withCard() . "";
+
+        return $this->marketing . "";
     }
 }

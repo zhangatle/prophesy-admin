@@ -9,6 +9,7 @@ use Dcat\Admin\Grid;
 use Dcat\Admin\Http\Controllers\AdminController;
 use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Layout\Row;
+use Dcat\Admin\Show;
 
 class PromoController extends AdminController
 {
@@ -51,10 +52,12 @@ class PromoController extends AdminController
 
     public function show($id, Content $content)
     {
-        return $content->header('Member')
+        return $content->header('推广用户')
             ->description('分润明细')
-            ->body(function (Row $row) use ($id) {
-                $row->column(12, new MarketingDetail(['id' =>$id]));
-            });
+            ->body(Show::make($id, new Member(), function (Show $show) use($id) {
+                $show->disableDeleteButton();
+                $show->disableEditButton();
+                $show->html(new MarketingDetail(['id' =>$id]));
+            }));
     }
 }
