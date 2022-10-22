@@ -25,15 +25,16 @@ class TransitionController extends AdminController
             $grid->column('in_member_id');
             $grid->column('in_name');
             $grid->column('in_mobile');
-            $grid->column('product_id');
             $grid->column('product_name');
             $grid->column('product_no');
             $grid->column('create_time');
             $grid->column('channel');
-        
+
             $grid->filter(function (Grid\Filter $filter) {
-                $filter->equal('id');
-        
+                $filter->panel();
+                $filter->equal('in_mobile')->width(3);
+                $filter->equal('out_mobile')->width(3);
+                $filter->between("create_time")->datetime()->width(3);
             });
         });
     }

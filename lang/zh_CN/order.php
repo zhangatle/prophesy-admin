@@ -1,4 +1,4 @@
-<?php 
+<?php
 return [
     'labels' => [
         'Order' => 'Order',
@@ -15,7 +15,7 @@ return [
         'channel' => '渠道',
         'payment_time' => '支付时间',
         'status' => '支付状态',
-        'chip_num' => '碎片数',
+        'chip_num_all' => '碎片数',
         'create_time' => '创建时间',
         'delete_time' => '删除时间',
     ],

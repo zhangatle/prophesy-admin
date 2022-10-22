@@ -30,7 +30,7 @@ class OrderDetail extends Card
     {
         parent::init();
         // 设置标题
-        $this->title('订单状态') . $this->order_no;
+        $this->title('基本信息');
     }
 
     // 传递自定义参数到 handle 方法
@@ -48,9 +48,11 @@ class OrderDetail extends Card
      */
     public function handle(Request $request)
     {
+        $this->title($this->order_no);
         // 获取外部传递的自定义参数
         $id = $request->get("id");
         $order_no = \App\Models\Order::query()->where("id", $id)->pluck("order_no")->first();
+        $this->order_no = $order_no;
         $build = Order::with(["activity", "member", "child"]);
         $this->activity = Grid::make($build, function (Grid $grid) use ($id, $order_no) {
             // 第一列显示id字段，并将这一列设置为可排序列

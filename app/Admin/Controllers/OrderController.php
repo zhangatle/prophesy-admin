@@ -2,9 +2,11 @@
 
 namespace App\Admin\Controllers;
 
+use App\Admin\Module\MarketingDetail;
 use App\Admin\Module\MemberData;
 use App\Admin\Module\MemberDetail;
 use App\Admin\Module\OrderDetail;
+use App\Admin\Repositories\Member;
 use App\Admin\Repositories\Order;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
@@ -33,9 +35,10 @@ class OrderController extends AdminController
             $grid->column('channel');
             $grid->column('payment_time');
             $grid->column('status')->using([1=>'已完成', 0 =>'未完成']);
-            $grid->column('chip_num');
+            $grid->column('chip_num_all');
             $grid->column('create_time');
-            $grid->column('delete_time');
+
+            $grid->disableDeleteButton();
 
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->equal('id');
@@ -46,10 +49,11 @@ class OrderController extends AdminController
 
     public function show($id, Content $content)
     {
-        return $content->header('订单详情')
-            ->description('详情')
-            ->body(function (Row $row) use ($id) {
-                $row->column(12, new OrderDetail(['id'=>$id]));
-            });
+        return $content
+            ->body(Show::make($id, new Order(), function (Show $show) use($id) {
+                $show->disableDeleteButton();
+                $show->disableEditButton();
+                $show->html(new OrderDetail(['id'=>$id]));
+            }));
     }
 }
