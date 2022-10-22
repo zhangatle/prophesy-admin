@@ -2,16 +2,10 @@
 
 namespace App\Admin\Controllers;
 
-use App\Admin\Module\MarketingDetail;
-use App\Admin\Module\MemberData;
-use App\Admin\Module\MemberDetail;
 use App\Admin\Module\OrderDetail;
-use App\Admin\Repositories\Member;
 use App\Admin\Repositories\Order;
-use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Layout\Content;
-use Dcat\Admin\Layout\Row;
 use Dcat\Admin\Show;
 use Dcat\Admin\Http\Controllers\AdminController;
 
