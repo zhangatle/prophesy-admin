@@ -15,4 +15,12 @@ class Activity extends Model
     public function details() {
         return $this->hasMany(ActivityDetail::class);
     }
+
+    public function result() {
+        return $this->hasMany(ActivityResult::class, "activity_id", 'id');
+    }
+
+    public function member_result() {
+        return $this->hasMany(MemberActivityResult::class, "activity_id", 'id');
+    }
 }

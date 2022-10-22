@@ -22,6 +22,7 @@ Route::group([
     $router->get('/report/summary', 'ReportController@index');
     $router->get('/report/daily', 'ReportController@daily');
     $router->resource('promo', 'PromoController');
+    $router->resource('result', 'ResultController');
 
 //    $router->get('activity/{id}/edit', 'ActivityController@edit');
 //    $router->put('activity/{id}', 'ActivityController@update');
