@@ -21,19 +21,22 @@ class MemberController extends AdminController
      */
     protected function grid()
     {
-        return Grid::make(new Member(), function (Grid $grid) {
+        $build = Member::with(["upper"]);
+        return Grid::make($build, function (Grid $grid) {
             $grid->column('id')->sortable();
-            $grid->column('upper_id');
+            $grid->column('upper.mobile', '上级手机号');
             $grid->column('username');
             $grid->column('mobile');
             $grid->column('first_consume');
             $grid->column('chip_num');
             $grid->column('chip_total');
-            $grid->column('last_login');
+            $grid->column('realname', '是否实名')->display(function () {
+                return $this->realname ? "是" : "否";
+            });
+            $grid->column('create_time');
             $grid->column('avatar')->image("", 30, 30);
-            $grid->column('level_id');
             $grid->column('status')->switch('', true);;
-            $grid->column('promo_code');
+            $grid->column('invite_code');
             $grid->column('rate');
 
             $grid->filter(function (Grid\Filter $filter) {
@@ -47,42 +50,6 @@ class MemberController extends AdminController
             $grid->disableCreateButton();
             $grid->disableDeleteButton();
 //            $grid->actions([new SwitchStatus(\App\Models\Member::class)]);
-        });
-    }
-
-    /**
-     * Make a show builder.
-     *
-     * @param mixed $id
-     *
-     * @return Show
-     */
-    protected function detail($id)
-    {
-        return Show::make($id, new Member(), function (Show $show) {
-            $show->field('id');
-            $show->field('mobile');
-            $show->field('username');
-            $show->field('realname');
-            $show->field('first_consume');
-            $show->field('chip_num');
-            $show->field('upper_id');
-            $show->field('password');
-            $show->field('birthday');
-            $show->field('address_id');
-            $show->field('last_login');
-            $show->field('login_num');
-            $show->field('last_ip');
-            $show->field('avatar');
-            $show->field('level_id');
-            $show->field('status');
-            $show->field('token');
-            $show->field('promo_code');
-            $show->field('create_time');
-            $show->field('update_time');
-            $show->field('delete_time');
-            $show->field('rate');
-            $show->field('chip_total');
         });
     }
 
@@ -119,11 +86,10 @@ class MemberController extends AdminController
 
     public function show($id, Content $content)
     {
-        return $content->header('Member')
+        return $content->header('用户')
             ->description('详情')
             ->body(function (Row $row) use ($id) {
                 $row->column(3, new MemberDetail(['id' =>$id]));
-
                 $row->column(9, new MemberData(['id'=>$id]));
             });
     }

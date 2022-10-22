@@ -14,4 +14,8 @@ class Member extends Model
 
     protected $fillable = ["status"];
 
+    public function upper() {
+        return $this->belongsTo(Member::class, "upper_id", "id");
+    }
+
 }

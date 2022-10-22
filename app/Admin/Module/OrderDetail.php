@@ -50,11 +50,11 @@ class OrderDetail extends Card
     {
         // 获取外部传递的自定义参数
         $id = $request->get("id");
-        $order_no = \App\Models\Order::query()->where("id", $id)->first()->pluck("order_no");
+        $order_no = \App\Models\Order::query()->where("id", $id)->pluck("order_no")->first();
         $build = Order::with(["activity", "member", "child"]);
-        $this->activity = Grid::make($build, function (Grid $grid) use ($id) {
+        $this->activity = Grid::make($build, function (Grid $grid) use ($id, $order_no) {
             // 第一列显示id字段，并将这一列设置为可排序列
-            $grid->model()->where("member_id", $id);
+            $grid->model()->where("order_no", $order_no);
             $grid->column('activity.name', '活动名称')->sortable();
             $grid->column('activity.start_time', '开始时间')->sortable();
             $grid->column('activity.end_time', '结束时间')->sortable();
@@ -67,9 +67,9 @@ class OrderDetail extends Card
             $grid->disablePagination();
             $grid->disableActions();
         });
-        $this->order = Grid::make($build, function (Grid $grid) use ($id) {
+        $this->order = Grid::make($build, function (Grid $grid) use ($id, $order_no) {
             // 第一列显示id字段，并将这一列设置为可排序列
-            $grid->model()->where("member_id", $id);
+            $grid->model()->where("order_no", $order_no);
             $grid->column('member.username', '用户昵称');
             $grid->column('order_no');
             $grid->column('activity.name');

@@ -32,8 +32,6 @@ class MemberDetail extends Card
     protected function init()
     {
         parent::init();
-        // 设置标题
-        $this->title('用户详情');
     }
 
     /**
