@@ -18,4 +18,11 @@ class Member extends Model
         return $this->belongsTo(Member::class, "upper_id", "id");
     }
 
+    public function downer() {
+        return $this->hasMany(Member::class, "upper_id", "id");
+    }
+
+    public function marketing() {
+        return $this->hasMany(MemberMarketing::class, "member_id", "id");
+    }
 }

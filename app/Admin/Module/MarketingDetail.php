@@ -47,25 +47,22 @@ class MarketingDetail extends Card
     {
         // 获取外部传递的自定义参数
         $id = $request->get("id");
-        $this->marketing = Grid::make(new MemberMarketing(), function (Grid $grid) use ($id) {
+        $m_build = MemberMarketing::with(["order"]);
+        $this->marketing = Grid::make($m_build, function (Grid $grid) use ($id) {
             // 第一列显示id字段，并将这一列设置为可排序列
             $grid->model()->where("member_id", $id);
 
-            $grid->column('id', 'ID')->sortable();
-            $grid->column('member_id', '用户')->sortable();
-            $grid->column('order_id', '订单号');
+            $grid->column('order_no', '订单号')->width("25%");
+            $grid->column('order.actual_price', '订单金额');
             $grid->column('rate', '分润比例');
+            $grid->column('rate_price', '分润金额');
+            $grid->column('cur_price', '当前余额');
             $grid->model()->orderBy("create_time", "desc");
 
             $grid->disableRefreshButton();
             $grid->disableCreateButton();
             $grid->disableRowSelector();
-            $grid->actions(function (Grid\Displayers\Actions $actions) {
-                $actions->disableDelete();
-                $actions->disableEdit();
-                $actions->disableQuickEdit();
-                $actions->disableView();
-            });
+            $grid->disableActions();
         });
     }
 
