@@ -20,6 +20,13 @@ class ActivityController extends AdminController
     protected function grid()
     {
         return Grid::make(new Activity(), function (Grid $grid) {
+            $grid->actions(function (Grid\Displayers\Actions $actions){
+                $start_time = $actions->row->start_time;
+                if($start_time < Carbon::now()) {
+                    $actions->disableEdit();
+                }
+            });
+
             $grid->column('id')->sortable();
             $grid->column('name');
             $grid->column('img_url')->image("", "50", "50");
