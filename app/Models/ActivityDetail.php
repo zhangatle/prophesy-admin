@@ -12,7 +12,7 @@ class ActivityDetail extends Model
     protected $table = 'fun_activity_detail';
     public $timestamps = false;
 
-    protected $fillable = ["type", "values", "key_map"];
+    protected $fillable = ["type", "values", "img_url_map"];
 
     public function activity() {
         return $this->belongsTo(Activity::class);

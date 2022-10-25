@@ -24,6 +24,10 @@ Route::group([
     $router->resource('promo', 'PromoController');
     $router->resource('result', 'ResultController');
 
+    $router->post("activity/save", 'ActivityController@save');
+
+    $router->any('/image/upload', 'ActivityController@uploadImg');
+
 //    $router->get('activity/{id}/edit', 'ActivityController@edit');
 //    $router->put('activity/{id}', 'ActivityController@update');
 });
