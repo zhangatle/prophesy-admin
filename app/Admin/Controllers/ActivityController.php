@@ -99,7 +99,6 @@ class ActivityController extends AdminController
     {
         return Form::make(new Activity(), function (Form $form) {
             $form->column(12, function (Form $form) {
-
                 $form->display('id');
                 $form->text('name')->default("cc");
                 $form->image('img_url')->autoUpload()->url("image/upload");
@@ -113,12 +112,7 @@ class ActivityController extends AdminController
                 $form->text('sort')->default("1");
                 $form->datetime("create_time")->default(Carbon::now());
                 $form->datetime("update_time")->default("2022-10-20 10:54:27");
-
-                $form->text("aa");
             });
-
-
-
 
 
             $form->column(12, function ( $form) {
@@ -134,8 +128,11 @@ class ActivityController extends AdminController
                     return json_encode($v);
                 });
             });
-
-            $form->action('activity/save');
+            if($form->isCreating()){
+                $form->action('activity/save');
+            }else{
+                $form->action('activity/save/' . $form->getKey());
+            }
         });
     }
 
@@ -144,7 +141,33 @@ class ActivityController extends AdminController
      *
      * @return mixed
      */
-    public function save(Request $request) {
+    public function doUpdate($id, Request $request) {
+
+        if(false) {
+
+        }else{
+            $play1 = $request->input("play1");
+            $play1_id = $play1["id"] ?? null;
+            $play1 = [
+                "type"=>1,
+                "activity_id"=>1,
+                "values"=>json_encode(["zs"=>$play1["zs"], "p"=>$play1["p"], "zf"=>$play1["zf"]]),
+                "img_url_map"=>json_encode(["zs"=>$play1["zs_img"], "p"=>$play1["p_img"], "zf"=>$play1["zf_img"]])
+            ];
+            // 判断是新增还是编辑
+            DB::transaction(function () use ($play1_id, $play1, $id) {
+                if($play1_id) {
+                    ActivityDetail::query()->where("id", $play1_id)->update($play1);
+                }else{
+                    ActivityDetail::query()->insert($play1);
+                }
+                $this->form()->ignore(["play1"])->update($id);
+            });
+        }
+        return JsonResponse::make()->success('提交成功！')->redirect("activity");
+    }
+
+    public function doCreate(Request $request) {
         $play1 = $request->input("play1");
         $play1_id = $play1["id"] ?? null;
         $play1 = [
@@ -153,6 +176,7 @@ class ActivityController extends AdminController
             "values"=>json_encode(["zs"=>$play1["zs"], "p"=>$play1["p"], "zf"=>$play1["zf"]]),
             "img_url_map"=>json_encode(["zs"=>$play1["zs_img"], "p"=>$play1["p_img"], "zf"=>$play1["zf_img"]])
         ];
+        // 判断是新增还是编辑
         DB::transaction(function () use ($play1_id, $play1) {
             if($play1_id) {
                 ActivityDetail::query()->where("id", $play1_id)->update($play1);
