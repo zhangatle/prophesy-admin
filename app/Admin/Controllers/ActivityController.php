@@ -9,10 +9,8 @@ use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Http\JsonResponse;
 use Dcat\Admin\Layout\Content;
-use Dcat\Admin\Show;
 use Dcat\Admin\Http\Controllers\AdminController;
 use Dcat\Admin\Traits\HasUploadedFile;
-use Dcat\Admin\Widgets\Table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -44,7 +42,7 @@ class ActivityController extends AdminController
             $grid->column('start_time');
             $grid->column('end_time');
             $grid->column('status')->using([0 => '禁用', 1 => '启用']);;
-            $grid->column('kt_status')->using([0 => '未空投', 1 => '已空投']);
+            $grid->column('kt_status')->using([0 => '未空投', 1 => '已空投', '2'=>'已派发']);
             $grid->column('create_time');
             $grid->column('activity_status')->display(function () {
                 if ($this->start_time > Carbon::now()) {
@@ -88,8 +86,8 @@ class ActivityController extends AdminController
                 })->autoUpload()->url("image/upload")->required();
                 $form->datetimeRange('start_time', 'end_time', '时间范围')->required();
                 $form->text('price')->required();
-                $form->text('status')->required();
-                $form->text('kt_status')->required();
+                $form->radio("status")->options(["0" => '禁用', "1"=> '启用'])->default("0")->required();
+                $form->radio('kt_status')->options(["0" => '未空投', "1"=> '已空投', "2"=>"已派发"])->default("0")->required();
                 $form->text('sort')->required();
             })->tab("猜谁会赢", function ($form) {
                 if($form->isEditing()) {
@@ -194,6 +192,11 @@ class ActivityController extends AdminController
         $play3_id = $request->input("play3_id");
         $play4_id = $request->input("play4_id");
 
+        $swiper_imgs = $request->input("swiper_imgs") ? json_encode(explode(",", $request->input("swiper_imgs"))) : null;
+        $detail = $request->input("detail") ? json_encode(explode(",", $request->input("detail"))) : null;
+        $request->offsetSet("swiper_imgs", $swiper_imgs);
+        $request->offsetSet("detail", $detail);
+
         if($play1 && $play2 && $play3 && $play4) {
             // 玩法1
             $play1 = [
@@ -226,7 +229,7 @@ class ActivityController extends AdminController
                 ActivityDetail::query()->where("id", $play2_id)->update($play2);
                 ActivityDetail::query()->where("id", $play3_id)->update($play3);
                 ActivityDetail::query()->where("id", $play4_id)->update($play4);
-                $this->form()->ignore(["play1", "play2", "play3", "play4","play1_id", "play2_id", "play3_id", "play4_id"])->update($id);
+                Activity::query()->where("id", $id)->update($request->only(["name", "img_url", "detail", "swiper_imgs", "price", "start_time", "end_time", "status", "kt_status", "sort"]));
                 DB::commit();
                 return JsonResponse::make()->success('提交成功！')->redirect("activity");
             }catch (\Exception $e) {
