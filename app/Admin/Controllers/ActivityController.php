@@ -123,21 +123,21 @@ class ActivityController extends AdminController
                     $form->hidden("play3_id");
                 }
                 $form->embeds('play3', '整场进球数', function (Form\EmbeddedForm $form) {
-                    $form->text('0')->value(0)->required()->type("number");
+                    $form->text('0')->placeholder("请输入碎片值")->required()->type("number");
                     $form->image('p0', '详情')->autoUpload()->required()->url("image/upload");
-                    $form->text('1')->value(0)->required()->type("number");
+                    $form->text('1')->placeholder("请输入碎片值")->required()->type("number");
                     $form->image('p1', '详情')->autoUpload()->required()->url("image/upload");
-                    $form->text('2')->value(0)->required()->type("number");
+                    $form->text('2')->placeholder("请输入碎片值")->required()->type("number");
                     $form->image('p2', '详情')->autoUpload()->required()->url("image/upload");
-                    $form->text('3')->value(0)->required()->type("number");
+                    $form->text('3')->placeholder("请输入碎片值")->required()->type("number");
                     $form->image('p3', '详情')->autoUpload()->required()->url("image/upload");
-                    $form->text('4')->value(0)->required()->type("number");
+                    $form->text('4')->placeholder("请输入碎片值")->required()->type("number");
                     $form->image('p4', '详情')->autoUpload()->required()->url("image/upload");
-                    $form->text('5')->value(0)->required()->type("number");
+                    $form->text('5')->placeholder("请输入碎片值")->required()->type("number");
                     $form->image('p5', '详情')->autoUpload()->required()->url("image/upload");
-                    $form->text('6')->value(0)->required()->type("number");
+                    $form->text('6')->placeholder("请输入碎片值")->required()->type("number");
                     $form->image('p6', '详情')->autoUpload()->required()->url("image/upload");
-                    $form->text('7plus')->value(0)->required()->type("number");
+                    $form->text('7plus')->placeholder("请输入碎片值")->required()->type("number");
                     $form->image('p7plus', '详情')->autoUpload()->required()->url("image/upload");
                 })->saving(function ($v) {
                     return json_encode($v);
@@ -147,7 +147,7 @@ class ActivityController extends AdminController
                     $form->hidden("play4_id");
                 }
                 $form->table('play4', '预言比分', function ($table) {
-                    $table->text('score')->required();
+                    $table->text('score')->required()->pattern("\d{1,}-\d{1,}");
                     $table->text('chip')->type("number")->required();
                     $table->image('pic')->autoUpload()->url("image/upload")->required();
                 })->saving(function ($v) {
