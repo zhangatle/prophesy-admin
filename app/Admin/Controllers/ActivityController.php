@@ -105,6 +105,9 @@ class ActivityController extends AdminController
                 $form->multipleImage("detail", '活动详情')->saving(function ($paths) {
                     return json_encode($paths);
                 })->autoUpload()->uniqueName()->url("image/upload");
+                $form->multipleImage("swiper_imgs", '轮播')->saving(function ($paths) {
+                    return json_encode($paths);
+                })->autoUpload()->uniqueName()->url("image/upload");
                 $form->datetimeRange('start_time', 'end_time', '时间范围');
                 $form->text('price')->default("1");
                 $form->text('status')->default("1");
@@ -116,6 +119,9 @@ class ActivityController extends AdminController
 
             $form->column(12, function ( $form) {
                 $form->embeds('play1', '猜谁会赢', function ( $form) {
+                    if($form->isEditing()) {
+                        $form->hidden("play1_id");
+                    }
                     $form->text('zs', '主胜');
                     $form->image('zs_img', '主胜详情')->autoUpload()->uniqueName()->url("image/upload");
                     $form->text('p', '平');
@@ -129,6 +135,9 @@ class ActivityController extends AdminController
 
             $form->column(12, function ( $form) {
                 $form->embeds('play2', '加大难度猜', function ( $form) {
+                    if($form->isEditing()) {
+                        $form->hidden("play2_id");
+                    }
                     $form->text('zr', '主让');
                     $form->text('zs', '主胜');
                     $form->image('zs_img', '主胜详情')->autoUpload()->uniqueName()->url("image/upload");
@@ -142,6 +151,9 @@ class ActivityController extends AdminController
             });
 
             $form->column(12, function ( $form) {
+                if($form->isEditing()) {
+                    $form->hidden("play3_id");
+                }
                 $form->embeds('play3', '整场进球数', function ( $form) {
                     $form->text('0')->value(0);
                     $form->image('p0', '详情')->autoUpload()->uniqueName()->url("image/upload");
@@ -157,8 +169,21 @@ class ActivityController extends AdminController
                     $form->image('p5', '详情')->autoUpload()->uniqueName()->url("image/upload");
                     $form->text('6')->value(0);
                     $form->image('p6', '详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('7+')->value(0);
-                    $form->image('p7+', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('7plus')->value(0);
+                    $form->image('p7plus', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                })->saving(function ($v) {
+                    return json_encode($v);
+                });
+            });
+
+            $form->column(12, function ( $form) {
+                if($form->isEditing()) {
+                    $form->hidden("play4_id");
+                }
+                $form->table('play4', '预言比分', function ($table) {
+                    $table->text('score');
+                    $table->text('chip');
+                    $table->image('pic')->autoUpload()->uniqueName()->url("image/upload");
                 })->saving(function ($v) {
                     return json_encode($v);
                 });
@@ -177,49 +202,113 @@ class ActivityController extends AdminController
      *
      * @return mixed
      */
-    public function doUpdate($id, Request $request) {
+    public function doUpdate($id, Request $request)
+    {
+        $play1 = $request->input("play1");
+        $play2 = $request->input("play2");
+        $play3 = $request->input("play3");
+        $play4 = $request->input("play4");
+        $play1_id = $request->input("play1_id");
+        $play2_id = $request->input("play2_id");
+        $play3_id = $request->input("play3_id");
+        $play4_id = $request->input("play4_id");
 
-        if(false) {
-
-        }else{
-            $play1 = $request->input("play1");
-            $play1_id = $play1["id"] ?? null;
+        if($play1 && $play2 && $play3 && $play4) {
+            // 玩法1
             $play1 = [
-                "type"=>1,
-                "activity_id"=>1,
                 "values"=>json_encode(["zs"=>$play1["zs"], "p"=>$play1["p"], "zf"=>$play1["zf"]]),
                 "img_url_map"=>json_encode(["zs"=>$play1["zs_img"], "p"=>$play1["p_img"], "zf"=>$play1["zf_img"]])
             ];
-            // 判断是新增还是编辑
-            DB::transaction(function () use ($play1_id, $play1, $id) {
-                if($play1_id) {
-                    ActivityDetail::query()->where("id", $play1_id)->update($play1);
-                }else{
-                    ActivityDetail::query()->insert($play1);
-                }
-                $this->form()->ignore(["play1"])->update($id);
+
+            $play2 = [
+                "values"=>json_encode(["zr"=>$play2["zr"],"zs"=>$play2["zs"], "p"=>$play2["p"], "zf"=>$play2["zf"]]),
+                "img_url_map"=>json_encode(["zs"=>$play2["zs_img"], "p"=>$play2["p_img"], "zf"=>$play2["zf_img"]])
+            ];
+
+            $play3 = [
+                "values"=>json_encode(["0"=>$play3["0"], "1"=>$play3["1"], "2"=>$play3["2"], "3"=>$play3["3"], "4"=>$play3["4"],"5"=>$play3["5"], "6"=>$play3["6"],"7+"=>$play3["7plus"]]),
+                "img_url_map"=>json_encode(["0"=>$play3["p0"], "1"=>$play3["p1"], "2"=>$play3["p2"], "3"=>$play3["p3"], "4"=>$play3["p4"],"5"=>$play3["p5"], "6"=>$play3["p6"],"7+"=>$play3["p7plus"]]),
+            ];
+
+            $play4_values = $play4_img_map = [];
+            foreach ($play4 as $item) {
+                $play4_values[$item["score"]] = $item["chip"];
+                $play4_img_map[$item["score"]] = $item["pic"];
+            }
+            $play4 = [
+                "values"=>json_encode($play4_values),
+                "img_url_map"=>json_encode($play4_img_map),
+            ];
+
+            DB::transaction(function () use ($play1, $play2, $play3, $play4, $play1_id, $play2_id, $play3_id, $play4_id, $id) {
+                ActivityDetail::query()->where("id", $play1_id)->update($play1);
+                ActivityDetail::query()->where("id", $play2_id)->update($play2);
+                ActivityDetail::query()->where("id", $play3_id)->update($play3);
+                ActivityDetail::query()->where("id", $play4_id)->update($play4);
+                $this->form()->ignore(["play1", "play2", "play3", "play4","play1_id", "play2_id", "play3_id", "play4_id"])->update($id);
             });
+            return JsonResponse::make()->success('提交成功！')->redirect("activity");
+        }else{
+            return JsonResponse::make()->error("参数错误");
         }
-        return JsonResponse::make()->success('提交成功！')->redirect("activity");
     }
 
+    /**
+     * 新增活动数据
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function doCreate(Request $request) {
         $play1 = $request->input("play1");
-        $play1_id = $play1["id"] ?? null;
-        $play1 = [
-            "type"=>1,
-            "activity_id"=>1,
-            "values"=>json_encode(["zs"=>$play1["zs"], "p"=>$play1["p"], "zf"=>$play1["zf"]]),
-            "img_url_map"=>json_encode(["zs"=>$play1["zs_img"], "p"=>$play1["p_img"], "zf"=>$play1["zf_img"]])
-        ];
+        $play2 = $request->input("play2");
+        $play3 = $request->input("play3");
+        $play4 = $request->input("play4");
+        if(!$play4 || count($play4) == 0) {
+            return JsonResponse::make()->error("data error");
+        }
+        $play4_values = $play4_img_map = [];
+        foreach ($play4 as $item) {
+            $play4_values[] = [$item["score"]=>$item["chip"]];
+            $play4_img_map[] = [$item["score"]=>$item["pic"]];
+        }
+
         // 判断是新增还是编辑
-        DB::transaction(function () use ($play1_id, $play1) {
-            if($play1_id) {
-                ActivityDetail::query()->where("id", $play1_id)->update($play1);
-            }else{
-                ActivityDetail::query()->insert($play1);
-            }
-            $this->form()->ignore(["play1"])->store();
+        DB::transaction(function () use ($play1, $play2, $play3, $play4_values, $play4_img_map, $request) {
+            $activity = new Activity();
+            $activity->fill($request->all());
+            $activity->save();
+            $activity_id = $activity->id;
+            $play1 = [
+                "type" => 1,
+                "activity_id"=>$activity_id,
+                "values"=>json_encode(["zs"=>$play1["zs"], "p"=>$play1["p"], "zf"=>$play1["zf"]]),
+                "img_url_map"=>json_encode(["zs"=>$play1["zs_img"], "p"=>$play1["p_img"], "zf"=>$play1["zf_img"]])
+            ];
+            $play2 = [
+                "type" => 2,
+                "activity_id"=>$activity_id,
+                "values"=>json_encode(["zr"=>$play2["zr"],"zs"=>$play2["zs"], "p"=>$play2["p"], "zf"=>$play2["zf"]]),
+                "img_url_map"=>json_encode(["zs"=>$play2["zs_img"], "p"=>$play2["p_img"], "zf"=>$play2["zf_img"]])
+            ];
+
+            $play3 = [
+                "type" => 3,
+                "activity_id"=>$activity_id,
+                "values"=>json_encode(["0"=>$play3["0"], "1"=>$play3["1"], "2"=>$play3["2"], "3"=>$play3["3"], "4"=>$play3["4"],"5"=>$play3["5"], "6"=>$play3["6"],"7+"=>$play3["7plus"]]),
+                "img_url_map"=>json_encode(["0"=>$play3["p0"], "1"=>$play3["p1"], "2"=>$play3["p2"], "3"=>$play3["p3"], "4"=>$play3["p4"],"5"=>$play3["p5"], "6"=>$play3["p6"],"7+"=>$play3["p7plus"]]),
+            ];
+
+            $play4 = [
+                "type" => 4,
+                "activity_id"=>$activity_id,
+                "values"=>json_encode($play4_values),
+                "img_url_map"=>json_encode($play4_img_map),
+            ];
+            ActivityDetail::query()->insert($play1);
+            ActivityDetail::query()->insert($play2);
+            ActivityDetail::query()->insert($play3);
+            ActivityDetail::query()->insert($play4);
+
         });
         return JsonResponse::make()->success('提交成功！')->redirect("activity");
     }
@@ -257,13 +346,59 @@ class ActivityController extends AdminController
      */
     public function edit($id, Content $content)
     {
-        $test = $this->form()->edit($id);
-        $test->model()->setAttribute("play1", ["zs"=>1, "zs_img"=>"prophesy/images/071a1376b24a586c019104ec3c8e1033.jpg"]);
+        $activity = $this->form()->edit($id);
+        $activity_detail = ActivityDetail::query()->where("activity_id", $id)->get()->toArray();
+        foreach ($activity_detail as $item) {
+            if($item["type"] == 1) {
+                $values = json_decode($item["values"], true);
+                $img_url_map = json_decode($item["img_url_map"], true);
+                $activity->model()->setAttribute("play1", ["zs"=>$values["zs"], "p"=>$values["p"], "zf"=>$values["zf"], "zs_img"=>$img_url_map["zs"], "p_img"=>$img_url_map["p"], "zf_img"=>$img_url_map["zf"]]);
+                $activity->model()->setAttribute("play1_id", $item["id"]);
+            }elseif($item["type"] == 2) {
+                $values = json_decode($item["values"], true);
+                $img_url_map = json_decode($item["img_url_map"], true);
+                $activity->model()->setAttribute("play2", ["zr"=>$values["zr"],"zs"=>$values["zs"], "p"=>$values["p"], "zf"=>$values["zf"], "zs_img"=>$img_url_map["zs"], "p_img"=>$img_url_map["p"], "zf_img"=>$img_url_map["zf"]]);
+                $activity->model()->setAttribute("play2_id", $item["id"]);
+            }
+            elseif($item["type"] == 3) {
+                $values = json_decode($item["values"], true);
+                $img_url_map = json_decode($item["img_url_map"], true);
+                $activity->model()->setAttribute("play3", [
+                    "0"=>$values["0"],
+                    "1"=>$values["1"],
+                    "2"=>$values["2"],
+                    "3"=>$values["3"],
+                    "4"=>$values["4"],
+                    "5"=>$values["5"],
+                    "6"=>$values["6"],
+                    "7plus"=>$values["7+"],
+
+                    "p0"=>$img_url_map["0"],
+                    "p1"=>$img_url_map["1"],
+                    "p2"=>$img_url_map["2"],
+                    "p3"=>$img_url_map["3"],
+                    "p4"=>$img_url_map["4"],
+                    "p5"=>$img_url_map["5"],
+                    "p6"=>$img_url_map["6"],
+                    "p7plus"=>$img_url_map["7+"],
+                ]);
+                $activity->model()->setAttribute("play3_id", $item["id"]);
+            }else{
+                $values = json_decode($item["values"], true);
+                $img_url_map = json_decode($item["img_url_map"], true);
+                $play4 = [];
+                foreach ($values as $k4 => $v4) {
+                    $play4[] = ["score"=>$k4, "chip"=>$v4, "pic"=>$img_url_map[$k4]];
+                }
+                $activity->model()->setAttribute("play4", $play4);
+                $activity->model()->setAttribute("play4_id", $item["id"]);
+            }
+        }
         return $content
             ->translation($this->translation())
             ->title($this->title())
             ->description($this->description()['edit'] ?? trans('admin.edit'))
-            ->body($test);
+            ->body($activity);
     }
 
 }
