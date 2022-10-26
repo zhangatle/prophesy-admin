@@ -12,8 +12,10 @@ use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Show;
 use Dcat\Admin\Http\Controllers\AdminController;
 use Dcat\Admin\Traits\HasUploadedFile;
+use Dcat\Admin\Widgets\Table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ActivityController extends AdminController
 {
@@ -26,13 +28,12 @@ class ActivityController extends AdminController
     protected function grid()
     {
         return Grid::make(new Activity(), function (Grid $grid) {
-//            $grid->actions(function (Grid\Displayers\Actions $actions){
-//                $start_time = $actions->row->start_time;
-//                if($start_time < Carbon::now()) {
-//                    $actions->disableEdit();
-//                }
-//            });
-
+            $grid->actions(function (Grid\Displayers\Actions $actions){
+                $start_time = $actions->row->start_time;
+                if($start_time < Carbon::now()) {
+                    $actions->disableEdit();
+                }
+            });
             $grid->column('id')->sortable();
             $grid->column('name');
             $grid->column('img_url')->image("", "50", "50");
@@ -68,29 +69,6 @@ class ActivityController extends AdminController
     }
 
     /**
-     * Make a show builder.
-     *
-     * @param mixed $id
-     *
-     * @return Show
-     */
-    protected function detail($id)
-    {
-        return Show::make($id, new Activity(), function (Show $show) {
-            $show->field('id');
-            $show->field('name');
-            $show->field('img_url');
-            $show->field('detail');
-            $show->field('price');
-            $show->field('start_time');
-            $show->field('end_time');
-            $show->field('status');
-            $show->field('kt_status');
-            $show->field('sort');
-        });
-    }
-
-    /**
      * Make a form builder.
      *
      * @return Form
@@ -100,35 +78,30 @@ class ActivityController extends AdminController
         return Form::make(new Activity(), function (Form $form) {
             $form->tab('基础配置', function (Form $form) {
                 $form->display('id');
-                $form->text('name');
-                $form->image('img_url')->autoUpload()->url("image/upload");
+                $form->text('name')->required()->maxLength(50);
+                $form->image('img_url')->autoUpload()->url("image/upload")->required();
                 $form->multipleImage("detail", '活动详情')->saving(function ($paths) {
                     return json_encode($paths);
-                })->autoUpload()->uniqueName()->url("image/upload");
+                })->autoUpload()->url("image/upload")->required();
                 $form->multipleImage("swiper_imgs", '轮播')->saving(function ($paths) {
                     return json_encode($paths);
-                })->autoUpload()->uniqueName()->url("image/upload");
-                $form->datetimeRange('start_time', 'end_time', '时间范围');
-                $form->text('price')->default("1");
-                $form->text('status')->default("1");
-                $form->text('kt_status')->default("1");
-                $form->text('sort')->default("1");
-                $form->datetime("create_time")->default(Carbon::now());
-                $form->datetime("update_time")->default("2022-10-20 10:54:27");
+                })->autoUpload()->url("image/upload")->required();
+                $form->datetimeRange('start_time', 'end_time', '时间范围')->required();
+                $form->text('price')->required();
+                $form->text('status')->required();
+                $form->text('kt_status')->required();
+                $form->text('sort')->required();
             })->tab("猜谁会赢", function ($form) {
                 if($form->isEditing()) {
                     $form->hidden("play1_id");
                 }
-                $form->embeds('play1', '猜谁会赢', function ( $form) {
-                    if($form->isEditing()) {
-                        $form->hidden("play1_id");
-                    }
-                    $form->text('zs', '主胜');
-                    $form->image('zs_img', '主胜详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('p', '平');
-                    $form->image('p_img', '平详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('zf', '主负');
-                    $form->image('zf_img', '主负详情')->autoUpload()->uniqueName()->url("image/upload");
+                $form->embeds('play1', '猜谁会赢', function (Form\EmbeddedForm $form) {
+                    $form->text('zs', '主胜')->type("number")->required();
+                    $form->image('zs_img', '主胜详情')->required()->autoUpload()->url("image/upload");
+                    $form->text('p', '平')->type("number")->required();
+                    $form->image('p_img', '平详情')->required()->autoUpload()->url("image/upload");
+                    $form->text('zf', '主负')->type("number")->required();
+                    $form->image('zf_img', '主负详情')->required()->autoUpload()->url("image/upload");
                 })->saving(function ($v) {
                     return json_encode($v);
                 });
@@ -136,17 +109,14 @@ class ActivityController extends AdminController
                 if($form->isEditing()) {
                     $form->hidden("play2_id");
                 }
-                $form->embeds('play2', '加大难度猜', function ( $form) {
-                    if($form->isEditing()) {
-                        $form->hidden("play2_id");
-                    }
-                    $form->text('zr', '主让');
-                    $form->text('zs', '主胜');
-                    $form->image('zs_img', '主胜详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('p', '平');
-                    $form->image('p_img', '平详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('zf', '主负');
-                    $form->image('zf_img', '主负详情')->autoUpload()->uniqueName()->url("image/upload");
+                $form->embeds('play2', '加大难度猜', function (Form\EmbeddedForm $form) {
+                    $form->text('zr', '主让')->type("number")->required();
+                    $form->text('zs', '主胜')->type("number")->required();
+                    $form->image('zs_img', '主胜详情')->required()->autoUpload()->url("image/upload");
+                    $form->text('p', '平')->type("number")->required();
+                    $form->image('p_img', '平详情')->required()->autoUpload()->url("image/upload");
+                    $form->text('zf', '主负')->type("number")->required();
+                    $form->image('zf_img', '主负详情')->required()->autoUpload()->url("image/upload");
                 })->saving(function ($v) {
                     return json_encode($v);
                 });
@@ -154,23 +124,23 @@ class ActivityController extends AdminController
                 if($form->isEditing()) {
                     $form->hidden("play3_id");
                 }
-                $form->embeds('play3', '整场进球数', function ( $form) {
-                    $form->text('0')->value(0);
-                    $form->image('p0', '详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('1')->value(0);
-                    $form->image('p1', '详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('2')->value(0);
-                    $form->image('p2', '详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('3')->value(0);
-                    $form->image('p3', '详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('4')->value(0);
-                    $form->image('p4', '详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('5')->value(0);
-                    $form->image('p5', '详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('6')->value(0);
-                    $form->image('p6', '详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('7plus')->value(0);
-                    $form->image('p7plus', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                $form->embeds('play3', '整场进球数', function (Form\EmbeddedForm $form) {
+                    $form->text('0')->value(0)->required()->type("number");
+                    $form->image('p0', '详情')->autoUpload()->required()->url("image/upload");
+                    $form->text('1')->value(0)->required()->type("number");
+                    $form->image('p1', '详情')->autoUpload()->required()->url("image/upload");
+                    $form->text('2')->value(0)->required()->type("number");
+                    $form->image('p2', '详情')->autoUpload()->required()->url("image/upload");
+                    $form->text('3')->value(0)->required()->type("number");
+                    $form->image('p3', '详情')->autoUpload()->required()->url("image/upload");
+                    $form->text('4')->value(0)->required()->type("number");
+                    $form->image('p4', '详情')->autoUpload()->required()->url("image/upload");
+                    $form->text('5')->value(0)->required()->type("number");
+                    $form->image('p5', '详情')->autoUpload()->required()->url("image/upload");
+                    $form->text('6')->value(0)->required()->type("number");
+                    $form->image('p6', '详情')->autoUpload()->required()->url("image/upload");
+                    $form->text('7plus')->value(0)->required()->type("number");
+                    $form->image('p7plus', '详情')->autoUpload()->required()->url("image/upload");
                 })->saving(function ($v) {
                     return json_encode($v);
                 });
@@ -179,9 +149,9 @@ class ActivityController extends AdminController
                     $form->hidden("play4_id");
                 }
                 $form->table('play4', '预言比分', function ($table) {
-                    $table->text('score');
-                    $table->text('chip');
-                    $table->image('pic')->autoUpload()->uniqueName()->url("image/upload");
+                    $table->text('score')->required();
+                    $table->text('chip')->type("number")->required();
+                    $table->image('pic')->autoUpload()->url("image/upload")->required();
                 })->saving(function ($v) {
                     return json_encode($v);
                 });
@@ -196,16 +166,12 @@ class ActivityController extends AdminController
             $form->disableDeleteButton();
             $form->disableViewButton();
             $form->footer(function ($footer) {
-
                 // 去掉`重置`按钮
                 $footer->disableReset();
-
                 // 去掉`查看`checkbox
                 $footer->disableViewCheck();
-
                 // 去掉`继续编辑`checkbox
                 $footer->disableEditingCheck();
-
                 // 去掉`继续创建`checkbox
                 $footer->disableCreatingCheck();
             });
@@ -254,15 +220,20 @@ class ActivityController extends AdminController
                 "values"=>json_encode($play4_values),
                 "img_url_map"=>json_encode($play4_img_map),
             ];
-
-            DB::transaction(function () use ($play1, $play2, $play3, $play4, $play1_id, $play2_id, $play3_id, $play4_id, $id) {
+            DB::beginTransaction();
+            try {
                 ActivityDetail::query()->where("id", $play1_id)->update($play1);
                 ActivityDetail::query()->where("id", $play2_id)->update($play2);
                 ActivityDetail::query()->where("id", $play3_id)->update($play3);
                 ActivityDetail::query()->where("id", $play4_id)->update($play4);
                 $this->form()->ignore(["play1", "play2", "play3", "play4","play1_id", "play2_id", "play3_id", "play4_id"])->update($id);
-            });
-            return JsonResponse::make()->success('提交成功！')->redirect("activity");
+                DB::commit();
+                return JsonResponse::make()->success('提交成功！')->redirect("activity");
+            }catch (\Exception $e) {
+                Log::error($e->getMessage());
+                DB::rollBack();
+                return JsonResponse::make()->error("参数错误");
+            }
         }else{
             return JsonResponse::make()->error("参数错误");
         }
