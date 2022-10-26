@@ -114,20 +114,56 @@ class ActivityController extends AdminController
                 $form->datetime("update_time")->default("2022-10-20 10:54:27");
             });
 
-
             $form->column(12, function ( $form) {
-                $form->embeds('play1', '玩法1', function ( $form) {
+                $form->embeds('play1', '猜谁会赢', function ( $form) {
                     $form->text('zs', '主胜');
                     $form->image('zs_img', '主胜详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('p', '主胜');
+                    $form->text('p', '平');
                     $form->image('p_img', '平详情')->autoUpload()->uniqueName()->url("image/upload");
-                    $form->text('zf', '主胜');
+                    $form->text('zf', '主负');
                     $form->image('zf_img', '主负详情')->autoUpload()->uniqueName()->url("image/upload");
                 })->saving(function ($v) {
-                    // 转化为json格式存储
                     return json_encode($v);
                 });
             });
+
+            $form->column(12, function ( $form) {
+                $form->embeds('play2', '加大难度猜', function ( $form) {
+                    $form->text('zr', '主让');
+                    $form->text('zs', '主胜');
+                    $form->image('zs_img', '主胜详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('p', '平');
+                    $form->image('p_img', '平详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('zf', '主负');
+                    $form->image('zf_img', '主负详情')->autoUpload()->uniqueName()->url("image/upload");
+                })->saving(function ($v) {
+                    return json_encode($v);
+                });
+            });
+
+            $form->column(12, function ( $form) {
+                $form->embeds('play3', '整场进球数', function ( $form) {
+                    $form->text('0')->value(0);
+                    $form->image('p0', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('1')->value(0);
+                    $form->image('p1', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('2')->value(0);
+                    $form->image('p2', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('3')->value(0);
+                    $form->image('p3', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('4')->value(0);
+                    $form->image('p4', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('5')->value(0);
+                    $form->image('p5', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('6')->value(0);
+                    $form->image('p6', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                    $form->text('7+')->value(0);
+                    $form->image('p7+', '详情')->autoUpload()->uniqueName()->url("image/upload");
+                })->saving(function ($v) {
+                    return json_encode($v);
+                });
+            });
+
             if($form->isCreating()){
                 $form->action('activity/save');
             }else{
