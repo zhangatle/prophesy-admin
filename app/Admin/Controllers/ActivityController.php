@@ -98,9 +98,9 @@ class ActivityController extends AdminController
     protected function form()
     {
         return Form::make(new Activity(), function (Form $form) {
-            $form->column(12, function (Form $form) {
+            $form->tab('基础配置', function (Form $form) {
                 $form->display('id');
-                $form->text('name')->default("cc");
+                $form->text('name');
                 $form->image('img_url')->autoUpload()->url("image/upload");
                 $form->multipleImage("detail", '活动详情')->saving(function ($paths) {
                     return json_encode($paths);
@@ -115,9 +115,10 @@ class ActivityController extends AdminController
                 $form->text('sort')->default("1");
                 $form->datetime("create_time")->default(Carbon::now());
                 $form->datetime("update_time")->default("2022-10-20 10:54:27");
-            });
-
-            $form->column(12, function ( $form) {
+            })->tab("猜谁会赢", function ($form) {
+                if($form->isEditing()) {
+                    $form->hidden("play1_id");
+                }
                 $form->embeds('play1', '猜谁会赢', function ( $form) {
                     if($form->isEditing()) {
                         $form->hidden("play1_id");
@@ -131,9 +132,10 @@ class ActivityController extends AdminController
                 })->saving(function ($v) {
                     return json_encode($v);
                 });
-            });
-
-            $form->column(12, function ( $form) {
+            })->tab("加大难度猜", function ($form) {
+                if($form->isEditing()) {
+                    $form->hidden("play2_id");
+                }
                 $form->embeds('play2', '加大难度猜', function ( $form) {
                     if($form->isEditing()) {
                         $form->hidden("play2_id");
@@ -148,9 +150,7 @@ class ActivityController extends AdminController
                 })->saving(function ($v) {
                     return json_encode($v);
                 });
-            });
-
-            $form->column(12, function ( $form) {
+            })->tab("整场进球数", function ($form) {
                 if($form->isEditing()) {
                     $form->hidden("play3_id");
                 }
@@ -174,9 +174,7 @@ class ActivityController extends AdminController
                 })->saving(function ($v) {
                     return json_encode($v);
                 });
-            });
-
-            $form->column(12, function ( $form) {
+            })->tab("预言比分", function ($form) {
                 if($form->isEditing()) {
                     $form->hidden("play4_id");
                 }
@@ -194,6 +192,23 @@ class ActivityController extends AdminController
             }else{
                 $form->action('activity/save/' . $form->getKey());
             }
+
+            $form->disableDeleteButton();
+            $form->disableViewButton();
+            $form->footer(function ($footer) {
+
+                // 去掉`重置`按钮
+                $footer->disableReset();
+
+                // 去掉`查看`checkbox
+                $footer->disableViewCheck();
+
+                // 去掉`继续编辑`checkbox
+                $footer->disableEditingCheck();
+
+                // 去掉`继续创建`checkbox
+                $footer->disableCreatingCheck();
+            });
         });
     }
 
@@ -263,14 +278,19 @@ class ActivityController extends AdminController
         $play2 = $request->input("play2");
         $play3 = $request->input("play3");
         $play4 = $request->input("play4");
-        if(!$play4 || count($play4) == 0) {
-            return JsonResponse::make()->error("data error");
+        if(!$play1 || !$play2 || !$play3 || !$play4) {
+            return JsonResponse::make()->error("参数错误");
         }
         $play4_values = $play4_img_map = [];
         foreach ($play4 as $item) {
-            $play4_values[] = [$item["score"]=>$item["chip"]];
-            $play4_img_map[] = [$item["score"]=>$item["pic"]];
+            $play4_values[$item["score"]] = $item["chip"];
+            $play4_img_map[$item["score"]] = $item["pic"];
         }
+
+        $swiper_imgs = $request->input("swiper_imgs") ? json_encode(explode(",", $request->input("swiper_imgs"))) : null;
+        $detail = $request->input("detail") ? json_encode(explode(",", $request->input("detail"))) : null;
+        $request->offsetSet("swiper_imgs", $swiper_imgs);
+        $request->offsetSet("detail", $detail);
 
         // 判断是新增还是编辑
         DB::transaction(function () use ($play1, $play2, $play3, $play4_values, $play4_img_map, $request) {
