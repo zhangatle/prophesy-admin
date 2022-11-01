@@ -13,6 +13,7 @@ use App\Admin\RowActions\PaiFaRow;
 use App\Admin\RowActions\PFAction;
 use App\Models\ActivityDetail;
 use App\Models\ActivityResult;
+use Carbon\Carbon;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Http\JsonResponse;
@@ -228,95 +229,39 @@ class ResultController extends AdminController
         $play5_id = $request->input("play5_id");
 
         if($play1 && $play2 && $play3 && $play4 && $play5) {
-            DB::beginTransaction();
-            try {
-                ActivityResult::query()->where("activity_id", $id)->where("id", $play1_id)->update(["win_key"=>$play1]);
-                ActivityResult::query()->where("activity_id", $id)->where("id", $play2_id)->update(["win_key"=>$play2]);
-                ActivityResult::query()->where("activity_id", $id)->where("id", $play3_id)->update(["win_key"=>$play3]);
-                ActivityResult::query()->where("activity_id", $id)->where("id", $play4_id)->update(["win_key"=>$play4]);
-                ActivityResult::query()->where("activity_id", $id)->where("id", $play5_id)->update(["win_key"=>$play5]);
-                DB::commit();
-                return JsonResponse::make()->success('提交成功！')->redirect("result");
-            }catch (\Exception $e) {
-                Log::error($e->getMessage());
-                DB::rollBack();
-                return JsonResponse::make()->error("参数错误");
+            if($play1_id && $play2_id && $play3_id && $play4_id && $play5_id) {
+                DB::beginTransaction();
+                try {
+                    ActivityResult::query()->where("activity_id", $id)->where("id", $play1_id)->update(["win_key"=>$play1]);
+                    ActivityResult::query()->where("activity_id", $id)->where("id", $play2_id)->update(["win_key"=>$play2]);
+                    ActivityResult::query()->where("activity_id", $id)->where("id", $play3_id)->update(["win_key"=>$play3]);
+                    ActivityResult::query()->where("activity_id", $id)->where("id", $play4_id)->update(["win_key"=>$play4]);
+                    ActivityResult::query()->where("activity_id", $id)->where("id", $play5_id)->update(["win_key"=>$play5]);
+                    DB::commit();
+                    return JsonResponse::make()->success('提交成功！')->redirect("result");
+                }catch (\Exception $e) {
+                    Log::error($e->getMessage());
+                    DB::rollBack();
+                    return JsonResponse::make()->error("参数错误");
+                }
+            }else {
+                DB::beginTransaction();
+                try {
+                    ActivityResult::query()->insert(["activity_id"=>$id, "type"=>1, "win_key"=>$play1, "create_time"=>Carbon::now(), "update_time"=>Carbon::now()]);
+                    ActivityResult::query()->insert(["activity_id"=>$id, "type"=>2, "win_key"=>$play2, "create_time"=>Carbon::now(), "update_time"=>Carbon::now()]);
+                    ActivityResult::query()->insert(["activity_id"=>$id, "type"=>3, "win_key"=>$play3, "create_time"=>Carbon::now(), "update_time"=>Carbon::now()]);
+                    ActivityResult::query()->insert(["activity_id"=>$id, "type"=>4, "win_key"=>$play4, "create_time"=>Carbon::now(), "update_time"=>Carbon::now()]);
+                    ActivityResult::query()->insert(["activity_id"=>$id, "type"=>5, "win_key"=>$play5, "create_time"=>Carbon::now(), "update_time"=>Carbon::now()]);
+                    DB::commit();
+                    return JsonResponse::make()->success('提交成功！')->redirect("result");
+                }catch (\Exception $e) {
+                    Log::error($e->getMessage());
+                    DB::rollBack();
+                    return JsonResponse::make()->error("参数错误");
+                }
             }
         }else{
             return JsonResponse::make()->error("参数错误");
         }
-    }
-
-    /**
-     * 新增活动数据
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function doCreate(Request $request) {
-        $play1 = $request->input("play1");
-        $play2 = $request->input("play2");
-        $play3 = $request->input("play3");
-        $play4 = $request->input("play4");
-        $play5 = $request->input("play5");
-        if(!$play1 || !$play2 || !$play3 || !$play4 || !$play5) {
-            return JsonResponse::make()->error("参数错误");
-        }
-        $play4_values = $play4_img_map = [];
-        foreach ($play4 as $item) {
-            $play4_values[$item["score"]] = $item["chip"];
-            $play4_img_map[$item["score"]] = $item["pic"];
-        }
-
-        $swiper_imgs = $request->input("swiper_imgs") ? json_encode(explode(",", $request->input("swiper_imgs"))) : null;
-        $detail = $request->input("detail") ? json_encode(explode(",", $request->input("detail"))) : null;
-        $request->offsetSet("swiper_imgs", $swiper_imgs);
-        $request->offsetSet("detail", $detail);
-
-        // 判断是新增还是编辑
-        DB::transaction(function () use ($play1, $play2, $play3, $play4_values, $play4_img_map, $request) {
-            $activity = new Activity();
-            $activity->fill($request->all());
-            $activity->save();
-            $activity_id = $activity->id;
-            $play1 = [
-                "type" => 1,
-                "activity_id"=>$activity_id,
-                "values"=>json_encode(["zs"=>$play1["zs"], "p"=>$play1["p"], "zf"=>$play1["zf"]]),
-                "img_url_map"=>json_encode(["zs"=>$play1["zs_img"], "p"=>$play1["p_img"], "zf"=>$play1["zf_img"]])
-            ];
-            $play2 = [
-                "type" => 2,
-                "activity_id"=>$activity_id,
-                "values"=>json_encode(["zr"=>$play2["zr"],"zs"=>$play2["zs"], "p"=>$play2["p"], "zf"=>$play2["zf"]]),
-                "img_url_map"=>json_encode(["zs"=>$play2["zs_img"], "p"=>$play2["p_img"], "zf"=>$play2["zf_img"]])
-            ];
-
-            $play3 = [
-                "type" => 3,
-                "activity_id"=>$activity_id,
-                "values"=>json_encode(["0"=>$play3["0"], "1"=>$play3["1"], "2"=>$play3["2"], "3"=>$play3["3"], "4"=>$play3["4"],"5"=>$play3["5"], "6"=>$play3["6"],"7+"=>$play3["7plus"]]),
-                "img_url_map"=>json_encode(["0"=>$play3["p0"], "1"=>$play3["p1"], "2"=>$play3["p2"], "3"=>$play3["p3"], "4"=>$play3["p4"],"5"=>$play3["p5"], "6"=>$play3["p6"],"7+"=>$play3["p7plus"]]),
-            ];
-
-            $play4 = [
-                "type" => 4,
-                "activity_id"=>$activity_id,
-                "values"=>json_encode($play4_values),
-                "img_url_map"=>json_encode($play4_img_map),
-            ];
-            $play5 = [
-                "type" => 5,
-                "activity_id"=>$activity_id,
-                "values"=>json_encode(["sc"=>$play1["sc"], "gt"=>$play1["gt"], "lt"=>$play1["lt"]]),
-                "img_url_map"=>json_encode(["gt"=>$play1["gt_img"], "lt"=>$play1["lt_img"]])
-            ];
-            ActivityDetail::query()->insert($play1);
-            ActivityDetail::query()->insert($play2);
-            ActivityDetail::query()->insert($play3);
-            ActivityDetail::query()->insert($play4);
-            ActivityDetail::query()->insert($play5);
-
-        });
-        return JsonResponse::make()->success('提交成功！')->redirect("activity");
     }
 }
