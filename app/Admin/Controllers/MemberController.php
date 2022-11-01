@@ -18,7 +18,7 @@ class MemberController extends AdminController
      *
      * @return Grid
      */
-    protected function grid()
+    protected function grid(): Grid
     {
         $build = Member::with(["upper"]);
         return Grid::make($build, function (Grid $grid) {
@@ -48,7 +48,6 @@ class MemberController extends AdminController
             $grid->model()->orderBy("create_time", "desc");
             $grid->disableCreateButton();
             $grid->disableDeleteButton();
-//            $grid->actions([new SwitchStatus(\App\Models\Member::class)]);
         });
     }
 
