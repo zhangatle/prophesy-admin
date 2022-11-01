@@ -29,6 +29,6 @@ Route::group([
 
     $router->any('/image/upload', 'ActivityController@uploadImg');
 
-//    $router->get('activity/{id}/edit', 'ActivityController@edit');
-//    $router->put('activity/{id}', 'ActivityController@update');
+    $router->post("result/save", 'ResultController@doCreate');
+    $router->put("result/save/{id}", 'ResultController@doUpdate');
 });

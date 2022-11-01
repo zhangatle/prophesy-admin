@@ -47,7 +47,7 @@ class ActivityController extends AdminController
             $grid->column('activity_status')->display(function () {
                 if ($this->start_time > Carbon::now()) {
                     return "未开始";
-                } elseif ($this->end < Carbon::now()) {
+                } elseif ($this->end_time < Carbon::now()) {
                     return "已结束";
                 } else {
                     return "进行中";
@@ -153,6 +153,19 @@ class ActivityController extends AdminController
                 })->saving(function ($v) {
                     return json_encode($v);
                 });
+            })->tab("猜进球范围", function ($form) {
+                if($form->isEditing()) {
+                    $form->hidden("play5_id");
+                }
+                $form->embeds('play5', '猜进球范围', function (Form\EmbeddedForm $form) {
+                    $form->text('sc', '数量')->pattern("^\d+(\.\d{1})?$")->required();
+                    $form->text('gt', '猜进球大于')->type("number")->required();
+                    $form->image('gt_img', '详情')->required()->autoUpload()->url("image/upload");
+                    $form->text('lt', '猜进球小于')->type("number")->required();
+                    $form->image('lt_img', '详情')->required()->autoUpload()->url("image/upload");
+                })->saving(function ($v) {
+                    return json_encode($v);
+                });
             });
 
             if($form->isCreating()){
@@ -187,17 +200,19 @@ class ActivityController extends AdminController
         $play2 = $request->input("play2");
         $play3 = $request->input("play3");
         $play4 = $request->input("play4");
+        $play5 = $request->input("play5");
         $play1_id = $request->input("play1_id");
         $play2_id = $request->input("play2_id");
         $play3_id = $request->input("play3_id");
         $play4_id = $request->input("play4_id");
+        $play5_id = $request->input("play5_id");
 
         $swiper_imgs = $request->input("swiper_imgs") ? json_encode(explode(",", $request->input("swiper_imgs"))) : null;
         $detail = $request->input("detail") ? json_encode(explode(",", $request->input("detail"))) : null;
         $request->offsetSet("swiper_imgs", $swiper_imgs);
         $request->offsetSet("detail", $detail);
 
-        if($play1 && $play2 && $play3 && $play4) {
+        if($play1 && $play2 && $play3 && $play4 && $play5) {
             // 玩法1
             $play1 = [
                 "values"=>json_encode(["zs"=>$play1["zs"], "p"=>$play1["p"], "zf"=>$play1["zf"]]),
@@ -223,12 +238,17 @@ class ActivityController extends AdminController
                 "values"=>json_encode($play4_values),
                 "img_url_map"=>json_encode($play4_img_map),
             ];
+            $play5 = [
+                "values"=>json_encode(["sc"=>$play5["sc"], "gt"=>$play5["gt"], "lt"=>$play5["lt"]]),
+                "img_url_map"=>json_encode(["gt"=>$play5["gt_img"], "lt"=>$play5["lt_img"]])
+            ];
             DB::beginTransaction();
             try {
                 ActivityDetail::query()->where("id", $play1_id)->update($play1);
                 ActivityDetail::query()->where("id", $play2_id)->update($play2);
                 ActivityDetail::query()->where("id", $play3_id)->update($play3);
                 ActivityDetail::query()->where("id", $play4_id)->update($play4);
+                ActivityDetail::query()->where("id", $play5_id)->update($play5);
                 Activity::query()->where("id", $id)->update($request->only(["name", "img_url", "detail", "swiper_imgs", "price", "start_time", "end_time", "status", "kt_status", "sort"]));
                 DB::commit();
                 return JsonResponse::make()->success('提交成功！')->redirect("activity");
@@ -252,7 +272,8 @@ class ActivityController extends AdminController
         $play2 = $request->input("play2");
         $play3 = $request->input("play3");
         $play4 = $request->input("play4");
-        if(!$play1 || !$play2 || !$play3 || !$play4) {
+        $play5 = $request->input("play5");
+        if(!$play1 || !$play2 || !$play3 || !$play4 || !$play5) {
             return JsonResponse::make()->error("参数错误");
         }
         $play4_values = $play4_img_map = [];
@@ -298,10 +319,17 @@ class ActivityController extends AdminController
                 "values"=>json_encode($play4_values),
                 "img_url_map"=>json_encode($play4_img_map),
             ];
+            $play5 = [
+                "type" => 5,
+                "activity_id"=>$activity_id,
+                "values"=>json_encode(["sc"=>$play1["sc"], "gt"=>$play1["gt"], "lt"=>$play1["lt"]]),
+                "img_url_map"=>json_encode(["gt"=>$play1["gt_img"], "lt"=>$play1["lt_img"]])
+            ];
             ActivityDetail::query()->insert($play1);
             ActivityDetail::query()->insert($play2);
             ActivityDetail::query()->insert($play3);
             ActivityDetail::query()->insert($play4);
+            ActivityDetail::query()->insert($play5);
 
         });
         return JsonResponse::make()->success('提交成功！')->redirect("activity");
@@ -377,7 +405,7 @@ class ActivityController extends AdminController
                     "p7plus"=>$img_url_map["7+"],
                 ]);
                 $activity->model()->setAttribute("play3_id", $item["id"]);
-            }else{
+            }elseif($item["type"] == 4){
                 $values = json_decode($item["values"], true);
                 $img_url_map = json_decode($item["img_url_map"], true);
                 $play4 = [];
@@ -386,6 +414,11 @@ class ActivityController extends AdminController
                 }
                 $activity->model()->setAttribute("play4", $play4);
                 $activity->model()->setAttribute("play4_id", $item["id"]);
+            }else{
+                $values = json_decode($item["values"], true);
+                $img_url_map = json_decode($item["img_url_map"], true);
+                $activity->model()->setAttribute("play5", ["sc"=>$values["sc"], "gt"=>$values["gt"], "lt"=>$values["lt"], "gt_img"=>$img_url_map["gt"], "lt_img"=>$img_url_map["lt"]]);
+                $activity->model()->setAttribute("play5_id", $item["id"]);
             }
         }
         return $content
