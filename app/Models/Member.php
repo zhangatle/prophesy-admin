@@ -2,21 +2,27 @@
 
 namespace App\Models;
 
-use Dcat\Admin\Traits\HasDateTimeFormatter;
-
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Member extends Model
 {
-	use HasDateTimeFormatter;
-    protected $table = 'fun_member';
-    public $timestamps = false;
 
+    protected $table = 'fun_member';
     protected $fillable = ["status"];
 
-    public function upper() {
+    // 上级
+    public function upper(): BelongsTo
+    {
         return $this->belongsTo(Member::class, "upper_id", "id");
     }
+
+    // 钱包
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(Wallet::class, "member_id", "id");
+    }
+
 
     public function downer() {
         return $this->hasMany(Member::class, "upper_id", "id");

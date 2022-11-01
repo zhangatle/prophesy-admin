@@ -2,17 +2,10 @@
 
 namespace App\Models;
 
-use Dcat\Admin\Traits\HasDateTimeFormatter;
-
-use Illuminate\Database\Eloquent\Model;
 
 class Activity extends Model
 {
-	use HasDateTimeFormatter;
     protected $table = 'fun_activity';
-    public $timestamps = true;
-    const CREATED_AT = 'create_time';
-    const UPDATED_AT = 'update_time';
 
     protected $fillable = ["name", "img_url", "detail", "swiper_imgs", "price", "start_time", "end_time", "status", "kt_status", "sort"];
 

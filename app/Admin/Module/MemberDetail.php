@@ -46,16 +46,16 @@ class MemberDetail extends Card
     {
         // 获取外部传递的自定义参数
         $id = $request->get("id");
-        $member_detail = Member::query()->find($id);
+        $member_detail = Member::query()->with(["wallet"])->find($id);
         $this->id = $member_detail->id;
         $this->mobile = $member_detail->mobile;
         $this->username = $member_detail->username;
-        $this->realname = $member_detail->realname ? $member_detail->realname : "未实名";
+        $this->realname = $member_detail->realname ?: "未实名";
         $this->create_time = Carbon::parse($member_detail->create_time);
         $this->status = $member_detail->status == 1 ? '正常' : '禁用';
-        $this->chip_num = $member_detail->chip_num;
-        $this->chip_total = $member_detail->chip_total;
-        $this->rate = $member_detail->rate;
+        $this->chip_num = $member_detail->wallet->chip_num;
+        $this->chip_total = $member_detail->wallet->chip_total;
+        $this->rate = $member_detail->rate . "%";
         $this->first_consume = $member_detail->first_consume;
         $this->avatar = "https://nft-markets.oss-cn-chengdu.aliyuncs.com/". $member_detail->avatar;
     }

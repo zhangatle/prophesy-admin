@@ -2,9 +2,8 @@
 
 namespace App\Admin\Module;
 
-use App\Admin\Repositories\Order;
-use App\Admin\Repositories\Transition;
-use App\Admin\Repositories\Withdrawal;
+use App\Models\Order;
+use App\Models\Transition;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Widgets\Metrics\Card;
 use Dcat\Admin\Widgets\Tab;
@@ -58,7 +57,7 @@ class MemberData extends Card
             $grid->column('order_no', '订单号');
             $grid->column('activity.name', '活动名称');
             $grid->column('actual_price', '实付');
-            $grid->column('channel', '付款方式');
+            $grid->column('channel', '付款方式')->using([1=>'碎片', 2=>'支付宝']);
             $grid->column('status', '订单状态')->using([0=>'待支付', 1=>'已支付', 2=>'已过期']);
             $grid->column('chip_num_all', '碎片数');
             $grid->model()->orderBy("create_time", "desc");
@@ -67,20 +66,6 @@ class MemberData extends Card
             $grid->disableRefreshButton();
             $grid->disableCreateButton();
             $grid->disableRowSelector();
-        });
-        $this->withdrawal = Grid::make(new Withdrawal(), function (Grid $grid) use ($id) {
-            // 第一列显示id字段，并将这一列设置为可排序列
-            $grid->model()->where("member_id", $id);
-            $grid->column('id', 'ID');
-            $grid->column('create_time', '发起时间');
-            $grid->column('apply_price', '提现金额');
-            $grid->column('status', '状态')->using([1=>'申请中', 2=>'已驳回', 3=>'已打款']);
-            $grid->column('pay_time', '转款时间');
-            $grid->model()->orderBy("create_time", "desc");
-            $grid->disableRefreshButton();
-            $grid->disableCreateButton();
-            $grid->disableRowSelector();
-            $grid->disableActions();
         });
         $this->transition_in = Grid::make(new Transition(), function (Grid $grid) use ($id) {
             // 第一列显示id字段，并将这一列设置为可排序列
@@ -123,7 +108,6 @@ class MemberData extends Card
         $tab = Tab::make();
         //添加两个选项卡
         $tab->add('购买记录', $this->buy, true);
-        $tab->add('提现记录', $this->withdrawal);
         $tab->add('转入记录', $this->transition_in);
         $tab->add('转出记录', $this->transition_out);
         return $tab->withCard() . "";
