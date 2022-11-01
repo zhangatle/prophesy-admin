@@ -2,14 +2,8 @@
 
 namespace App\Admin\Controllers;
 
-use App\Admin\Module\MarketingDetail;
-use App\Admin\Module\MemberData;
-use App\Admin\Module\MemberDetail;
 use App\Admin\Module\ResultDetail;
 use App\Admin\Repositories\Activity;
-use App\Admin\Repositories\Member;
-use App\Admin\Repositories\Order;
-use App\Admin\RowActions\PaiFaRow;
 use App\Admin\RowActions\PFAction;
 use App\Models\ActivityDetail;
 use App\Models\ActivityResult;
@@ -18,7 +12,6 @@ use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Http\JsonResponse;
 use Dcat\Admin\Layout\Content;
-use Dcat\Admin\Layout\Row;
 use Dcat\Admin\Http\Controllers\AdminController;
 use Dcat\Admin\Show;
 use Illuminate\Http\Request;
@@ -212,10 +205,11 @@ class ResultController extends AdminController
 
     /**
      * Store a newly created resource in storage.
-     *
+     * @param $id
+     * @param Request $request
      * @return mixed
      */
-    public function doUpdate($id, Request $request)
+    public function doUpdate($id, Request $request): mixed
     {
         $play1 = $request->input("play1");
         $play2 = $request->input("play2");

@@ -22,11 +22,8 @@ class ReportController extends Controller
             ->header('活动报表')
             ->description('列表')
             ->body(function (Row $row) {
-                $row->column(9, function (Column $column) {
+                $row->column(12, function (Column $column) {
                     $column->row(ActivityReport::list());
-                });
-                $row->column(3, function (Column $column) {
-                    $column->row(new Examples\Tickets());
                 });
             });
     }

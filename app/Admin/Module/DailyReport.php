@@ -16,6 +16,8 @@ class DailyReport
             $grid->column('promo_amount');
             $grid->column('withdrawal_amount');
 
+            $grid->model()->orderBy("date", "desc");
+
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->panel();
                 $filter->like("activity_name")->width(5);
