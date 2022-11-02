@@ -147,9 +147,9 @@ class ActivityController extends AdminController
                     $form->hidden("play4_id");
                 }
                 $form->table('play4', '预言比分', function ($table) {
-                    $table->text('score')->required()->pattern("\d{1,}-\d{1,}");
-                    $table->text('chip')->type("number")->required();
-                    $table->image('pic')->autoUpload()->url("image/upload")->required();
+                    $table->text('score', '比分')->required()->pattern("\d{1,}-\d{1,}");
+                    $table->text('chip', '碎片')->type("number")->required();
+                    $table->image('pic', '详情')->autoUpload()->url("image/upload")->required();
                 })->saving(function ($v) {
                     return json_encode($v);
                 });

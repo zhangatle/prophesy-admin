@@ -2,13 +2,10 @@
 
 namespace App\Admin\Module;
 
-use App\Admin\Repositories\Order;
-use App\Admin\Repositories\Transition;
-use App\Admin\Repositories\Withdrawal;
-use App\Models\MemberMarketing;
+
+use App\Models\Order;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Widgets\Metrics\Card;
-use Dcat\Admin\Widgets\Tab;
 use Illuminate\Http\Request;
 
 class ResultDetail extends Card

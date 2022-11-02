@@ -3,8 +3,8 @@
 namespace App\Admin\Controllers;
 
 use App\Admin\Module\ResultDetail;
-use App\Admin\Repositories\Activity;
 use App\Admin\RowActions\PFAction;
+use App\Models\Activity;
 use App\Models\ActivityDetail;
 use App\Models\ActivityResult;
 use Carbon\Carbon;
@@ -46,11 +46,6 @@ class ResultController extends AdminController
                 $filter->equal('status')->select(['1' => '开启', '0' => '关闭'])->width(2);
             });
             $grid->actions(function (Grid\Displayers\Actions $actions){
-                $result = $actions->row->result;
-//                if(count($result) == 0) {
-//                    // append一个操作
-//                    $actions->append(new PFAction());
-//                }
                 $actions->append(new PFAction());
             });
             $grid->disableDeleteButton();

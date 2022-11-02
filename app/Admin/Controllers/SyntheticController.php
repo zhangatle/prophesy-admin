@@ -2,8 +2,7 @@
 
 namespace App\Admin\Controllers;
 
-use App\Admin\Repositories\Synthetic;
-use Carbon\Carbon;
+use App\Models\Synthetic;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Show;
@@ -63,6 +62,8 @@ class SyntheticController extends AdminController
             $show->field('status');
             $show->field('synthetic_status');
             $show->field('create_time');
+            $show->disableEditButton();
+            $show->disableDeleteButton();
         });
     }
 
@@ -78,11 +79,25 @@ class SyntheticController extends AdminController
             $form->text('name')->required();
             $form->image('url')->autoUpload()->required();
             $form->text('need_chip_num')->required();
+            $form->text('first_price')->required();
             $form->multipleImage("detail", '活动详情')->saving(function ($paths) {
                 return json_encode($paths);
             })->autoUpload()->uniqueName()->required();
-            $form->text('status')->required();
-            $form->text('synthetic_status')->required();
+            $form->radio("status")->options(["1" => '可流通', "0"=> '不可流通'])->required();
+            $form->radio("synthetic_status")->options(["1" => '可合成', "0"=> '不可合成'])->required();
+
+            $form->footer(function ($footer) {
+                // 去掉`重置`按钮
+                $footer->disableReset();
+                // 去掉`查看`checkbox
+                $footer->disableViewCheck();
+                // 去掉`继续编辑`checkbox
+                $footer->disableEditingCheck();
+                // 去掉`继续创建`checkbox
+                $footer->disableCreatingCheck();
+            });
+            $form->disableDeleteButton();
+            $form->disableViewButton();
         });
     }
 }
