@@ -48,7 +48,9 @@ class MarketingDetail extends Card
 
             $grid->column('order_no', '订单号')->width("25%");
             $grid->column('order.actual_price', '订单金额');
-            $grid->column('rate', '分润比例');
+            $grid->column('rate', '分润比例')->display(function () {
+                return $this->rate . "%";
+            });
             $grid->column('rate_price', '分润金额');
             $grid->column('cur_price', '当前余额');
             $grid->model()->orderBy("create_time", "desc");

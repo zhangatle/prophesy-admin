@@ -2,13 +2,10 @@
 
 namespace App\Admin\Module;
 
-use App\Admin\Repositories\Order;
-use App\Admin\Repositories\Transition;
-use App\Admin\Repositories\Withdrawal;
+use App\Models\Order;
 use App\Models\OrdersChild;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Widgets\Metrics\Card;
-use Dcat\Admin\Widgets\Tab;
 use Illuminate\Http\Request;
 
 class OrderDetail extends Card
@@ -29,7 +26,6 @@ class OrderDetail extends Card
     protected function init()
     {
         parent::init();
-        // 设置标题
         $this->title('基本信息');
     }
 
@@ -48,19 +44,17 @@ class OrderDetail extends Card
      */
     public function handle(Request $request)
     {
-        $this->title($this->order_no);
         // 获取外部传递的自定义参数
         $id = $request->get("id");
-        $order_no = \App\Models\Order::query()->where("id", $id)->pluck("order_no")->first();
+        $order_no = Order::query()->where("id", $id)->pluck("order_no")->first();
         $this->order_no = $order_no;
         $build = Order::with(["activity", "member", "child"]);
         $this->activity = Grid::make($build, function (Grid $grid) use ($id, $order_no) {
             // 第一列显示id字段，并将这一列设置为可排序列
             $grid->model()->where("order_no", $order_no);
-            $grid->column('activity.name', '活动名称')->sortable();
-            $grid->column('activity.start_time', '开始时间')->sortable();
-            $grid->column('activity.end_time', '结束时间')->sortable();
-            $grid->model()->orderBy("create_time", "desc");
+            $grid->column('activity.name', '活动名称');
+            $grid->column('activity.start_time', '开始时间');
+            $grid->column('activity.end_time', '结束时间');
             $grid->withBorder();
 
             $grid->disableRefreshButton();
@@ -72,19 +66,15 @@ class OrderDetail extends Card
         $this->order = Grid::make($build, function (Grid $grid) use ($id, $order_no) {
             // 第一列显示id字段，并将这一列设置为可排序列
             $grid->model()->where("order_no", $order_no);
+            $grid->column("order_no", '订单号');
             $grid->column('member.username', '用户昵称');
-            $grid->column('order_no');
-            $grid->column('activity.name');
+            $grid->column('member.id', '用户ID');
+            $grid->column('member.realname', '真实姓名');
             $grid->column('member.mobile', '手机号');
-            $grid->column('actual_price');
-            $grid->column('channel');
-            $grid->column('payment_time');
-            $grid->column('status')->using([1=>'已完成', 0 =>'未完成']);
-            $grid->column('chip_num');
-            $grid->column('create_time');
-            $grid->column('delete_time');
-
-            $this->order_no = $grid->column("order_no");
+            $grid->column('channel', '支付渠道')->using([1=>'碎片', 2=>'支付宝']);
+            $grid->column('payment_time', '支付时间');
+            $grid->column('status', '订单状态')->using([1=>'已完成', 0 =>'待付款']);
+            $grid->column('create_time', '下单时间');
 
             $grid->withBorder();
 
@@ -99,15 +89,17 @@ class OrderDetail extends Card
         $this->sku = Grid::make($sku_build, function (Grid $grid) use ($order_no) {
             // 第一列显示id字段，并将这一列设置为可排序列
             $grid->model()->where("order_no", $order_no);
-            $grid->column("id");
-            $grid->column("order_no");
-            $grid->column("activity.name");
-            $grid->column("type");
-            $grid->column("keywork");
-            $grid->column("number");
-            $grid->column("chip_num");
-            $grid->column("status");
-            $grid->column("price");
+            $grid->column("id", '子订单ID');
+            $grid->column("type")->using([
+                1=> '猜谁会赢',
+                2=> '加大难度猜',
+                3=> '整场进球数',
+                4=> '预言比分',
+                5=> '猜范围'
+            ]);
+            $grid->column("keyword", '规则');
+            $grid->column("number", '购买数量');
+            $grid->column("chip_num", '碎片');
             $grid->withBorder();
 
             $grid->disableActions();

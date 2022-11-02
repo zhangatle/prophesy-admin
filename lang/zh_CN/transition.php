@@ -1,8 +1,8 @@
-<?php 
+<?php
 return [
     'labels' => [
-        'Transition' => 'Transition',
-        'transition' => 'Transition',
+        'Transition' => '流转',
+        'transition' => '流转',
     ],
     'fields' => [
         'out_member_id' => '转出用户id',

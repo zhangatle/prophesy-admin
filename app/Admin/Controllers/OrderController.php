@@ -3,7 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Admin\Module\OrderDetail;
-use App\Admin\Repositories\Order;
+use App\Models\Order;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Show;
@@ -16,33 +16,39 @@ class OrderController extends AdminController
      *
      * @return Grid
      */
-    protected function grid()
+    protected function grid(): Grid
     {
         $build = Order::with(['activity', 'member']);
         return Grid::make($build, function (Grid $grid) {
             $grid->column('id')->sortable();
             $grid->column('member.username', '用户昵称');
             $grid->column('order_no');
-            $grid->column('activity.name');
+            $grid->column('activity.name', '活动名称');
             $grid->column('member.mobile', '手机号');
             $grid->column('actual_price');
-            $grid->column('channel');
+            $grid->column('channel')->using([1=>'碎片', 2 =>'支付宝']);
             $grid->column('payment_time');
-            $grid->column('status')->using([1=>'已完成', 0 =>'未完成']);
-            $grid->column('chip_num_all');
+            $grid->column('status')->using([1=>'已完成', 0 =>'待付款']);
             $grid->column('create_time');
+
+            $grid->model()->orderBy("create_time", "desc");
 
             $grid->disableDeleteButton();
             $grid->disableCreateButton();
+            $grid->disableEditButton();
 
             $grid->filter(function (Grid\Filter $filter) {
-                $filter->equal('id');
-
+                $filter->panel();
+                $filter->equal('order_no')->width(2);
+                $filter->equal('member.mobile')->width(2);
+                $filter->between("create_time", '下单时间')->datetime()->width(4);
+                $filter->equal('status')->select(['1' => '已完成', '0' => '待付款'])->width(2);
+                $filter->equal('channel')->select(['1' => '碎片', '2' => '支付宝'])->width(2);
             });
         });
     }
 
-    public function show($id, Content $content)
+    public function show($id, Content $content): Content
     {
         return $content
             ->body(Show::make($id, new Order(), function (Show $show) use($id) {

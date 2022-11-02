@@ -2,7 +2,7 @@
 
 namespace App\Admin\Controllers;
 
-use App\Admin\Repositories\Transition;
+use App\Models\Transition;
 use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Show;
@@ -15,7 +15,7 @@ class TransitionController extends AdminController
      *
      * @return Grid
      */
-    protected function grid()
+    protected function grid(): Grid
     {
         return Grid::make(new Transition(), function (Grid $grid) {
             $grid->column('id')->sortable();
@@ -28,7 +28,8 @@ class TransitionController extends AdminController
             $grid->column('product_name');
             $grid->column('product_no');
             $grid->column('create_time');
-            $grid->column('channel');
+            $grid->column('channel')->using([1=>'内部', 2=>'外部']);
+            $grid->model()->orderBy("create_time", "desc");
 
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->panel();
@@ -36,6 +37,8 @@ class TransitionController extends AdminController
                 $filter->equal('out_mobile')->width(3);
                 $filter->between("create_time")->datetime()->width(3);
             });
+            $grid->disableActions();
+            $grid->disableCreateButton();
         });
     }
 
