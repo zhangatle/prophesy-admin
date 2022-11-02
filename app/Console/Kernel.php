@@ -15,7 +15,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+         $schedule->command('activity_report')->hourly()->runInBackground()->environments("prod");
+         $schedule->command('daily_report')->hourly()->runInBackground()->environments("prod");
     }
 
     /**
