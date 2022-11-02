@@ -29,6 +29,7 @@ class ResultController extends AdminController
     {
         $build = Activity::with(["result", "member_result"]);
         return Grid::make($build, function (Grid $grid) {
+            $grid->model()->where("end_time", "<=" , Carbon::now());
             $grid->column('name');
             $grid->column('member_result', '派发总数')->display(function ($member_result) {
                 return array_sum(array_column($member_result->toArray(), "chip_num"));
@@ -37,7 +38,7 @@ class ResultController extends AdminController
             $grid->column('result', '派发时间')->display(function ($result) {
                 return $result[0]['create_time'] ?? "";
             });
-            $grid->column('status')->using([0 => '未派发', 1 => '已派发']);;
+            $grid->column('kt_status', '派发状态')->using([0=>'未空投',1 => '已空投', 2 => '已派发']);;
 
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->panel();
@@ -45,8 +46,8 @@ class ResultController extends AdminController
                 $filter->between("start_time")->datetime()->width(3);
                 $filter->equal('status')->select(['1' => '开启', '0' => '关闭'])->width(2);
             });
-            $grid->actions(function (Grid\Displayers\Actions $actions){
-                $actions->append(new PFAction());
+            $grid->actions(function (Grid\Displayers\Actions $actions) use ($grid){
+                $actions->append(new PFAction($this->kt_status));
             });
             $grid->disableDeleteButton();
             $grid->disableRowSelector();

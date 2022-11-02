@@ -6,6 +6,11 @@ use Dcat\Admin\Grid\RowAction;
 
 class PFAction extends RowAction
 {
+    public function __construct($title = null)
+    {
+        parent::__construct($title);
+    }
+
     /**
      * 返回字段标题
      *
@@ -13,7 +18,12 @@ class PFAction extends RowAction
      */
     public function title()
     {
-        return '派发';
+        if($this->title == 2) {
+            // 已派发的就不允许显示了
+            return "";
+        }else{
+            return '派发';
+        }
     }
 
     public function html()
