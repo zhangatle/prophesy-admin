@@ -2,6 +2,10 @@
 
 namespace App\Admin\Controllers;
 
+use App\Admin\Module\MemberData;
+use App\Admin\Module\MemberDetail;
+use App\Admin\RowActions\ActivityDoAction;
+use App\Admin\RowActions\PFAction;
 use App\Models\Activity;
 use App\Models\ActivityDetail;
 use Carbon\Carbon;
@@ -10,6 +14,7 @@ use Dcat\Admin\Grid;
 use Dcat\Admin\Http\JsonResponse;
 use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Http\Controllers\AdminController;
+use Dcat\Admin\Layout\Row;
 use Dcat\Admin\Traits\HasUploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,9 +33,9 @@ class ActivityController extends AdminController
         return Grid::make(new Activity(), function (Grid $grid) {
             $grid->actions(function (Grid\Displayers\Actions $actions){
                 $start_time = $actions->row->start_time;
-                if($start_time < Carbon::now()) {
-                    $actions->disableEdit();
-                }
+//                if($start_time < Carbon::now()) {
+//                    $actions->disableEdit();
+//                }
             });
             $grid->column('id')->sortable();
             $grid->column('name');
@@ -54,6 +59,10 @@ class ActivityController extends AdminController
                 }
             });
 
+            $grid->actions(function (Grid\Displayers\Actions $actions){
+                $actions->append(new ActivityDoAction());
+            });
+
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->panel();
                 $filter->like("name")->width(2);
@@ -63,6 +72,7 @@ class ActivityController extends AdminController
             $grid->disableDeleteButton();
             $grid->disableRowSelector();
             $grid->disableViewButton();
+            $grid->disableEditButton();
         });
     }
 
@@ -176,7 +186,7 @@ class ActivityController extends AdminController
 
             $form->disableDeleteButton();
             $form->disableViewButton();
-            $form->footer(function ($footer) {
+            $form->footer(function ($footer) use ($form) {
                 // 去掉`重置`按钮
                 $footer->disableReset();
                 // 去掉`查看`checkbox
@@ -185,6 +195,10 @@ class ActivityController extends AdminController
                 $footer->disableEditingCheck();
                 // 去掉`继续创建`checkbox
                 $footer->disableCreatingCheck();
+
+                if($form->isEditing() && $form->model()->start_time < Carbon::now()) {
+                    $form->disableSubmitButton();
+                }
             });
         });
     }
@@ -427,5 +441,4 @@ class ActivityController extends AdminController
             ->description($this->description()['edit'] ?? trans('admin.edit'))
             ->body($activity);
     }
-
 }
