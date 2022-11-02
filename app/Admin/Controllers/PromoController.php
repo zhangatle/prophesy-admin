@@ -3,7 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Admin\Module\MarketingDetail;
-use App\Admin\Repositories\Member;
+use App\Models\Member;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Http\Controllers\AdminController;
 use Dcat\Admin\Layout\Content;
@@ -18,23 +18,26 @@ class PromoController extends AdminController
      *
      * @return Grid
      */
-    protected function grid()
+    protected function grid(): Grid
     {
-        return Grid::make(new Member(['upper', 'downer', 'marketing']), function (Grid $grid) {
-            $grid->model()->whereNotNull("first_consume");
-            $grid->column('id')->sortable();
-            $grid->column('upper.mobile', '上级手机号');
+        $build = Member::with(['upper', 'marketing', 'downer', 'wallet'])->whereHas("downer", function ($query){
+            $query->where("first_consume" , ">", 0);
+        });
+        return Grid::make($build, function (Grid $grid) {
+            $grid->column('id');
+            $grid->column('upper_id', '上级ID');
             $grid->column('username');
             $grid->column('mobile');
-            $grid->column('downer', '所有下级首发消费额')->display(function ($downer) {
+            $grid->column('downer', '所有下级首发消费额')->display(function ($downer){
                 return array_sum(array_column($downer->toArray(), "first_consume"));
             });
             $grid->column('marketing', '总奖金')->display(function ($marketing) {
                 return array_sum(array_column($marketing->toArray(), "rate_price"));
             });
-            $grid->column('wallet');
+            $grid->column('wallet.total', '当前余额')->display(function () {
+                return $this->wallet ? $this->wallet->total : 0;
+            });
             $grid->column('create_time');
-
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->panel();
                 $filter->equal("mobile")->width(2);

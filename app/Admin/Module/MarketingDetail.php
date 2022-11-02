@@ -2,13 +2,9 @@
 
 namespace App\Admin\Module;
 
-use App\Admin\Repositories\Order;
-use App\Admin\Repositories\Transition;
-use App\Admin\Repositories\Withdrawal;
 use App\Models\MemberMarketing;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Widgets\Metrics\Card;
-use Dcat\Admin\Widgets\Tab;
 use Illuminate\Http\Request;
 
 class MarketingDetail extends Card
@@ -41,7 +37,7 @@ class MarketingDetail extends Card
      *
      * @return void
      */
-    public function handle(Request $request)
+    public function handle(Request $request): void
     {
         // 获取外部传递的自定义参数
         $id = $request->get("id");
@@ -64,7 +60,7 @@ class MarketingDetail extends Card
         });
     }
 
-    public function renderContent()
+    public function renderContent(): string
     {
 
         return $this->marketing . "";
