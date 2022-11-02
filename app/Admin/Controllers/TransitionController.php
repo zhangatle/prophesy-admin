@@ -3,9 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Models\Transition;
-use Dcat\Admin\Form;
 use Dcat\Admin\Grid;
-use Dcat\Admin\Show;
 use Dcat\Admin\Http\Controllers\AdminController;
 
 class TransitionController extends AdminController
@@ -39,54 +37,6 @@ class TransitionController extends AdminController
             });
             $grid->disableActions();
             $grid->disableCreateButton();
-        });
-    }
-
-    /**
-     * Make a show builder.
-     *
-     * @param mixed $id
-     *
-     * @return Show
-     */
-    protected function detail($id)
-    {
-        return Show::make($id, new Transition(), function (Show $show) {
-            $show->field('id');
-            $show->field('out_member_id');
-            $show->field('out_name');
-            $show->field('out_mobile');
-            $show->field('in_member_id');
-            $show->field('in_name');
-            $show->field('in_mobile');
-            $show->field('product_id');
-            $show->field('product_name');
-            $show->field('product_no');
-            $show->field('create_time');
-            $show->field('channel');
-        });
-    }
-
-    /**
-     * Make a form builder.
-     *
-     * @return Form
-     */
-    protected function form()
-    {
-        return Form::make(new Transition(), function (Form $form) {
-            $form->display('id');
-            $form->text('out_member_id');
-            $form->text('out_name');
-            $form->text('out_mobile');
-            $form->text('in_member_id');
-            $form->text('in_name');
-            $form->text('in_mobile');
-            $form->text('product_id');
-            $form->text('product_name');
-            $form->text('product_no');
-            $form->text('create_time');
-            $form->text('channel');
         });
     }
 }
