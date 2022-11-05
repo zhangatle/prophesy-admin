@@ -277,7 +277,8 @@ class ActivityController extends AdminController
      * @param Request $request
      * @return JsonResponse
      */
-    public function doCreate(Request $request) {
+    public function doCreate(Request $request): JsonResponse
+    {
         $play1 = $request->input("play1");
         $play2 = $request->input("play2");
         $play3 = $request->input("play3");
@@ -298,7 +299,7 @@ class ActivityController extends AdminController
         $request->offsetSet("detail", $detail);
 
         // 判断是新增还是编辑
-        DB::transaction(function () use ($play1, $play2, $play3, $play4_values, $play4_img_map, $request) {
+        DB::transaction(function () use ($play1, $play2, $play3, $play4_values, $play4_img_map, $play5, $request) {
             $activity = new Activity();
             $activity->fill($request->all());
             $activity->save();
@@ -332,8 +333,8 @@ class ActivityController extends AdminController
             $play5 = [
                 "type" => 5,
                 "activity_id"=>$activity_id,
-                "values"=>json_encode(["sc"=>$play1["sc"], "gt"=>$play1["gt"], "lt"=>$play1["lt"]]),
-                "img_url_map"=>json_encode(["gt"=>$play1["gt_img"], "lt"=>$play1["lt_img"]])
+                "values"=>json_encode(["sc"=>$play5["sc"], "gt"=>$play5["gt"], "lt"=>$play5["lt"]]),
+                "img_url_map"=>json_encode(["gt"=>$play5["gt_img"], "lt"=>$play5["lt_img"]])
             ];
             ActivityDetail::query()->insert($play1);
             ActivityDetail::query()->insert($play2);
